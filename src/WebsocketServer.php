@@ -11,7 +11,6 @@ namespace TS\Websockets;
 
 use Evenement\EventEmitter;
 use Http\RequestFilterInterface;
-use Http\ResponseException;
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
@@ -23,13 +22,13 @@ use TS\Websockets\Connections\ControllerDelegation;
 use TS\Websockets\Http\FilterCollection;
 use TS\Websockets\Http\RequestParser;
 use TS\Websockets\Http\RequestParserInterface;
+use TS\Websockets\Http\ResponseException;
 use TS\Websockets\Http\WebsocketNegotiator;
 use TS\Websockets\Routing\RequestMatcherInterface;
 use TS\Websockets\Routing\Route;
 use TS\Websockets\Routing\RouteCollection;
 use TS\Websockets\Routing\UrlPatternRequestMatcher;
 use function GuzzleHttp\Psr7\str;
-
 
 
 /**

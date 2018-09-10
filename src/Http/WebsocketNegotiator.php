@@ -9,7 +9,6 @@
 namespace TS\Websockets\Http;
 
 
-use Http\ResponseException;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Handshake\NegotiatorInterface;

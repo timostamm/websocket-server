@@ -11,6 +11,7 @@ namespace Http;
 
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\ServerRequestInterface;
+use TS\Websockets\Http\ResponseException;
 
 
 class AllowOriginFilter implements RequestFilterInterface
