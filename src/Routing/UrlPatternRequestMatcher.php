@@ -39,8 +39,8 @@ class UrlPatternRequestMatcher implements RequestMatcherInterface
 
     public function matches(ServerRequestInterface $request): bool
     {
-        $uri = $request->getUri()->__toString();
-        return fnmatch($this->getPattern(), $uri);
+        $target = $request->getRequestTarget();
+        return fnmatch($this->getPattern(), $target);
     }
 
 
