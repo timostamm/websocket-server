@@ -2,19 +2,26 @@
 
 A simple nonblocking server dedicated to websockets.
 
+- routes HTTP requests to simple websocket-controllers
+- upgrades HTTP requests
+- can filter HTTP requests
+- works with apache >= 2.4
+- minimal dependencies (react/socket, ratchet/rfc6455, guzzlehttp/psr7)
+
 
 #### Example
 
 ```php
-$loop = Factory::create();
+$loop = Factory::create(); // use a react event loop
 
+
+// bind the server to a port
 $server = new WebsocketServer($loop, [
     'uri' => '127.0.0.1:23080'
 ]);
 
 
-// add a controller that handles websocket connections 
-// for a specific route 
+// add a controller 
 $server->addRoute('/hello/*', new class() implements ControllerInterface
 {
 
@@ -36,7 +43,7 @@ $server->addRoute('/hello/*', new class() implements ControllerInterface
 
 });
 
-$loop->run();
+$loop->run(); // the react event loop processes socket connections
 ```
 
 
