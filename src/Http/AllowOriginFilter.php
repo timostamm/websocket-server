@@ -6,12 +6,11 @@
  * Time: 15:45
  */
 
-namespace Http;
+namespace TS\Websockets\Http;
 
 
 use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\ServerRequestInterface;
-use TS\Websockets\Http\ResponseException;
 
 
 class AllowOriginFilter implements RequestFilterInterface

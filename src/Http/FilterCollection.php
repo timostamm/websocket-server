@@ -9,7 +9,6 @@
 namespace TS\Websockets\Http;
 
 
-use Http\RequestFilterInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use TS\Websockets\Routing\RequestMatcherInterface;
 use TS\Websockets\Routing\Route;

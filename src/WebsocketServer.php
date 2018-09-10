@@ -10,7 +10,6 @@ namespace TS\Websockets;
 
 
 use Evenement\EventEmitter;
-use Http\RequestFilterInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
@@ -20,6 +19,7 @@ use TS\Websockets\Connections\ConnectionFactory;
 use TS\Websockets\Connections\ConnectionFactoryInterface;
 use TS\Websockets\Connections\ControllerDelegation;
 use TS\Websockets\Http\FilterCollection;
+use TS\Websockets\Http\RequestFilterInterface;
 use TS\Websockets\Http\RequestParser;
 use TS\Websockets\Http\RequestParserInterface;
 use TS\Websockets\Http\ResponseException;
