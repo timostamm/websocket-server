@@ -11,7 +11,6 @@ namespace TS\Websockets\Http;
 
 use Psr\Http\Message\ServerRequestInterface;
 use TS\Websockets\Routing\RequestMatcherInterface;
-use TS\Websockets\Routing\Route;
 
 
 class FilterCollection
@@ -30,16 +29,6 @@ class FilterCollection
     public function add(RequestMatcherInterface $matcher, RequestFilterInterface $filter): void
     {
         $this->filters[] = [$matcher, $filter];
-    }
-
-    public function match(ServerRequestInterface $request): ?Route
-    {
-        foreach ($this->filters as $route) {
-            if ($route->matches($request)) {
-                return $route;
-            }
-        }
-        return null;
     }
 
 

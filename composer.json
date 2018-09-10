@@ -19,5 +19,13 @@
         "psr-4": {
             "TS\\Websockets\\": "src/"
         }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "TS\\Websockets\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.3"
     }
 }

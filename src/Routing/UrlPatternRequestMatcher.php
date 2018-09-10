@@ -24,6 +24,9 @@ class UrlPatternRequestMatcher implements RequestMatcherInterface
      */
     public function __construct(string $pattern)
     {
+        if (empty($pattern)) {
+            throw new \InvalidArgumentException();
+        }
         $this->pattern = $pattern;
     }
 

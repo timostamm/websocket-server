@@ -9,7 +9,6 @@
 namespace TS\Websockets\Http;
 
 
-use GuzzleHttp\Psr7\Uri;
 use Psr\Http\Message\ServerRequestInterface;
 
 
@@ -23,14 +22,30 @@ class AllowOriginFilter implements RequestFilterInterface
      */
     public function __construct(array $allowedOrigins)
     {
-        $this->allowedOrigins = $allowedOrigins;
+        if (empty($allowedOrigins)) {
+            throw new \InvalidArgumentException('No allowed origins provides');
+        }
+        foreach ($allowedOrigins as $origin) {
+            if (!is_string($origin)) {
+                throw new \InvalidArgumentException();
+            }
+            $origin = trim($origin);
+            if (empty($origin)) {
+                throw new \InvalidArgumentException();
+            }
+            $this->allowedOrigins[] = strtolower($origin);
+        }
     }
 
 
     public function apply(ServerRequestInterface $request): ServerRequestInterface
     {
-        $origin = new Uri($request->getHeaderLine('Origin'));
-        $host = $origin->getHost();
+        $origin = $request->getHeaderLine('Origin');
+        if (empty($origin)) {
+            $msg = 'Origin not provided';
+            throw ResponseException::create(403, $msg, $msg);
+        }
+        $host = strtolower(parse_url($origin, PHP_URL_HOST));
         if (!in_array($host, $this->allowedOrigins)) {
             $msg = 'Origin is not allowed';
             throw ResponseException::create(403, $msg, $msg);
