@@ -32,7 +32,7 @@ class FilterCollectionTest extends TestCase
         $input = new ServerRequest('GET', 'http://example.com');
 
         /** @var RequestMatcherInterface | MockObject $matcher */
-        $matcher = $this->getMockBuilder(RequestMatcherInterface::class)->getMock();
+        $matcher = $this->createMock(RequestMatcherInterface::class);
         $matcher
             ->expects($this->exactly(2))
             ->method('matches')
@@ -40,7 +40,7 @@ class FilterCollectionTest extends TestCase
 
 
         /** @var RequestFilterInterface | MockObject $filter1 */
-        $filter1 = $this->getMockBuilder(RequestFilterInterface::class)->getMock();
+        $filter1 = $this->createMock(RequestFilterInterface::class);
         $filter1
             ->expects($this->exactly(1))
             ->method('apply')
@@ -50,7 +50,7 @@ class FilterCollectionTest extends TestCase
         $this->subject->add($matcher, $filter1);
 
         /** @var RequestFilterInterface | MockObject $filter2 */
-        $filter2 = $this->getMockBuilder(RequestFilterInterface::class)->getMock();
+        $filter2 = $this->createMock(RequestFilterInterface::class);
         $filter2
             ->expects($this->exactly(1))
             ->method('apply')
