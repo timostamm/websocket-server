@@ -149,7 +149,10 @@ class WebSocketHandler
 
     public function onTcpError(\Throwable $throwable): void
     {
-        $this->webSocket->emit('error', [$throwable]);
+        if (! $this->closed && ! $this->closing) {
+            $this->webSocket->emit('error', [$throwable]);
+            $this->webSocket->emit('close');
+        }
         $this->setClosed();
     }
 
@@ -158,6 +161,7 @@ class WebSocketHandler
     {
         if (!$this->closed && !$this->closing) {
             $this->webSocket->emit(new \RuntimeException('TCP connection ended without close.'));
+            $this->webSocket->emit('close');
         }
         $this->setClosed();
     }
@@ -167,6 +171,7 @@ class WebSocketHandler
     {
         if (!$this->closed && !$this->closing) {
             $this->webSocket->emit(new \RuntimeException('TCP connection closed without close.'));
+            $this->webSocket->emit('close');
         }
         $this->setClosed();
     }
@@ -194,6 +199,7 @@ class WebSocketHandler
 
                 $this->closing = true;
                 $this->tcpConnection->end($frame->getContents());
+                $this->webSocket->emit('close');
 
                 break;
 
