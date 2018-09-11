@@ -6,7 +6,7 @@
  * Time: 10:52
  */
 
-namespace TS\Websockets\Connections;
+namespace TS\WebSockets\Connections;
 
 
 use Psr\Http\Message\ServerRequestInterface;
@@ -16,7 +16,7 @@ use Ratchet\RFC6455\Messaging\FrameInterface;
 use Ratchet\RFC6455\Messaging\MessageBuffer;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use React\Socket\ConnectionInterface;
-use TS\Websockets\WebSocket;
+use TS\WebSockets\WebSocket;
 
 
 /**

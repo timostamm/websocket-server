@@ -6,11 +6,11 @@
  * Time: 08:10
  */
 
-namespace TS\Websockets\Http;
+namespace TS\WebSockets\Http;
 
 
 use Psr\Http\Message\ServerRequestInterface;
-use TS\Websockets\Routing\RequestMatcherInterface;
+use TS\WebSockets\Routing\RequestMatcherInterface;
 
 
 class FilterCollection

@@ -3,11 +3,11 @@
 
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\Factory;
-use TS\Websockets\ControllerInterface;
-use TS\Websockets\Http\OriginFilter;
-use TS\Websockets\Http\ResponseException;
-use TS\Websockets\WebSocket;
-use TS\Websockets\WebSocketServer;
+use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\Http\OriginFilter;
+use TS\WebSockets\Http\ResponseException;
+use TS\WebSockets\WebSocket;
+use TS\WebSockets\WebSocketServer;
 
 
 require_once __DIR__ . '/../vendor/autoload.php';

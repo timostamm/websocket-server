@@ -6,7 +6,7 @@
  * Time: 08:55
  */
 
-namespace TS\Websockets\Routing;
+namespace TS\WebSockets\Routing;
 
 
 use Psr\Http\Message\ServerRequestInterface;

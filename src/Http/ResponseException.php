@@ -6,7 +6,7 @@
  * Time: 15:35
  */
 
-namespace TS\Websockets\Http;
+namespace TS\WebSockets\Http;
 
 
 use GuzzleHttp\Psr7\Response;

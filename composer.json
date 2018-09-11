@@ -17,12 +17,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "TS\\Websockets\\": "src/"
+            "TS\\WebSockets\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "TS\\Websockets\\": "tests/"
+            "TS\\WebSockets\\": "tests/"
         }
     },
     "require-dev": {

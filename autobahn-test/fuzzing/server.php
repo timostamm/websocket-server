@@ -1,8 +1,8 @@
 <?php
 
 use React\EventLoop\LoopInterface;
-use TS\Websockets\WebSocket;
-use TS\Websockets\WebSocketServer;
+use TS\WebSockets\WebSocket;
+use TS\WebSockets\WebSocketServer;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 

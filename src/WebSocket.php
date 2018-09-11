@@ -12,7 +12,7 @@ namespace TS\Websockets;
 use Evenement\EventEmitter;
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Messaging\Frame;
-use TS\Websockets\Connections\WebSocketHandler;
+use TS\WebSockets\Connections\WebSocketHandler;
 
 
 /**

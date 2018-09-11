@@ -6,13 +6,13 @@
  * Time: 13:58
  */
 
-namespace TS\Websockets\Routing;
+namespace TS\WebSockets\Routing;
 
 
 use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
-use TS\Websockets\ControllerInterface;
-use TS\Websockets\WebSocket;
+use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\WebSocket;
 
 
 class RouteTest extends TestCase

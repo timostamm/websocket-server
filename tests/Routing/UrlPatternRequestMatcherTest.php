@@ -6,7 +6,7 @@
  * Time: 19:45
  */
 
-namespace TS\Websockets\Routing;
+namespace TS\WebSockets\Routing;
 
 
 use GuzzleHttp\Psr7\ServerRequest;

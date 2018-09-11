@@ -6,7 +6,7 @@
  * Time: 09:59
  */
 
-namespace TS\Websockets\Connections;
+namespace TS\WebSockets\Connections;
 
 
 use Psr\Http\Message\ServerRequestInterface;

@@ -6,12 +6,12 @@
  * Time: 14:41
  */
 
-namespace TS\Websockets\Connections;
+namespace TS\WebSockets\Connections;
 
 
 use Evenement\EventEmitterInterface;
-use TS\Websockets\ControllerInterface;
-use TS\Websockets\WebSocket;
+use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\WebSocket;
 
 
 class ControllerDelegation

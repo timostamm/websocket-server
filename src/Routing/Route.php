@@ -6,12 +6,12 @@
  * Time: 08:10
  */
 
-namespace TS\Websockets\Routing;
+namespace TS\WebSockets\Routing;
 
 
 use Psr\Http\Message\ServerRequestInterface;
-use TS\Websockets\ControllerInterface;
-use TS\Websockets\WebSocket;
+use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\WebSocket;
 
 
 class Route

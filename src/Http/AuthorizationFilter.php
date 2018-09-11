@@ -10,8 +10,8 @@ namespace Http;
 
 
 use Psr\Http\Message\ServerRequestInterface;
-use TS\Websockets\Http\RequestFilterInterface;
-use TS\Websockets\Http\ResponseException;
+use TS\WebSockets\Http\RequestFilterInterface;
+use TS\WebSockets\Http\ResponseException;
 
 
 class AuthorizationFilter implements RequestFilterInterface
