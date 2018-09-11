@@ -12,7 +12,7 @@ namespace TS\Websockets\Http;
 use Psr\Http\Message\ServerRequestInterface;
 
 
-class AllowOriginFilter implements RequestFilterInterface
+class OriginFilter implements RequestFilterInterface
 {
 
     private $allowedOrigins;

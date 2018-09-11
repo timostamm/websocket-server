@@ -24,7 +24,7 @@ class AllowOriginFilterTest extends TestCase
     public function testConstructor(array $allow)
     {
         $this->expectException(\InvalidArgumentException::class);
-        new AllowOriginFilter($allow);
+        new OriginFilter($allow);
     }
 
 
@@ -36,7 +36,7 @@ class AllowOriginFilterTest extends TestCase
      */
     public function testAllow(string $origin, ... $allow)
     {
-        $subject = new AllowOriginFilter($allow);
+        $subject = new OriginFilter($allow);
         $request = new ServerRequest('GET', 'http://example.com', [
             'Origin' => $origin
         ]);
@@ -53,7 +53,7 @@ class AllowOriginFilterTest extends TestCase
      */
     public function testDeny(string $origin, ... $allow)
     {
-        $subject = new AllowOriginFilter($allow);
+        $subject = new OriginFilter($allow);
         $request = new ServerRequest('GET', 'http://example.com', [
             'Origin' => $origin
         ]);
@@ -64,7 +64,7 @@ class AllowOriginFilterTest extends TestCase
 
     public function testMissingHeader()
     {
-        $subject = new AllowOriginFilter(['example.com']);
+        $subject = new OriginFilter(['example.com']);
         $request = new ServerRequest('GET', 'http://example.com');
         $this->expectException(ResponseException::class);
         $subject->apply($request);
@@ -72,7 +72,7 @@ class AllowOriginFilterTest extends TestCase
 
     public function testEmptyHeader()
     {
-        $subject = new AllowOriginFilter(['example.com']);
+        $subject = new OriginFilter(['example.com']);
         $request = new ServerRequest('GET', 'http://example.com', [
             'Origo' => ''
         ]);

@@ -14,6 +14,7 @@ use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Ratchet\RFC6455\Handshake\NegotiatorInterface;
+use function GuzzleHttp\Psr7\str;
 
 
 class WebsocketNegotiatorTest extends TestCase
@@ -38,7 +39,7 @@ class WebsocketNegotiatorTest extends TestCase
     public function testSwitchingProtocols()
     {
         $request = new ServerRequest('GET', 'http//example.com');
-        $response = new Response(101);
+        $response = new Response(101, ['X-Powered-By' => 'ratchet/rfc6455']);
 
         $this->neg
             ->method('handshake')
@@ -46,7 +47,8 @@ class WebsocketNegotiatorTest extends TestCase
             ->willReturn($response);
 
         $result = $this->subject->handshake($request, []);
-        $this->assertSame($response, $result);
+
+        $this->assertSame(str($response), str($result));
     }
 
 }

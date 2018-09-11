@@ -17,22 +17,22 @@ $server = new WebSocketServer($loop, ['uri' => $uri]);
 print '[server.php] Websocket server using ' . $loopClass . ' listening on ' . $server->getAddress() . PHP_EOL;
 
 
-$server->addRoute('*', new class implements ControllerInterface
+$server->route('*', new class implements ControllerInterface
 {
     function onMessage(WebSocket $from, string $payload, bool $binary): void
     {
         $from->send($payload, $binary);
     }
 
-    function onOpen(WebSocket $connection): void
+    function onOpen(WebSocket $socket): void
     {
     }
 
-    function onClose(WebSocket $connection): void
+    function onClose(WebSocket $socket): void
     {
     }
 
-    function onError(WebSocket $connection, \Throwable $error): void
+    function onError(WebSocket $socket, \Throwable $error): void
     {
     }
 });
