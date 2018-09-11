@@ -116,8 +116,11 @@ You can provide your or RequestMatcherInterface and RequestFilterInterface
 implementations. Filters can also be added via `route()`: 
 ```php
 $server->route([
+    'match' => '/example/*', 
     'filter' => function(ServerRequestInterface $request){
-        if ($request->)
+        if ($request->getRequestTarget() === '/example/forbidden') {
+            throw ResponseException::create(403);
+        }
     }
     'controller' => ...
 ]);
