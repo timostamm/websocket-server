@@ -1,12 +1,16 @@
-# Websocket Server
+# WebSocket Server
 
 A simple nonblocking server dedicated to websockets.
 
-- routes HTTP requests to simple websocket-controllers
 - upgrades HTTP requests
+- routes HTTP requests to simple websocket-controllers
 - can filter HTTP requests
-- works with apache >= 2.4
-- minimal dependencies (react/socket, ratchet/rfc6455, guzzlehttp/psr7)
+- passes [Autobahn WebSocket Testsuite](https://htmlpreview.github.io/?https://github.com/timostamm/websocket-server/master/autobahn-test/reports/complete/index.html)
+- does NOT implement compression
+- works well with apache >= 2.4
+- minimal dependencies ([react/socket](https://packagist.org/packages/react/socket), [ratchet/rfc6455](https://packagist.org/packages/ratchet/rfc6455), [guzzlehttp/psr7](https://packagist.org/packages/guzzlehttp/psr7))
+
+Credits for the websocket protocol implementation go to [ratchet/rfc6455](https://github.com/ratchetphp/RFC6455).
 
 
 #### Example
@@ -14,40 +18,136 @@ A simple nonblocking server dedicated to websockets.
 ```php
 $loop = Factory::create(); // use a react event loop
 
-
-// bind the server to a port
+// start server
 $server = new WebsocketServer($loop, [
     'uri' => '127.0.0.1:23080'
 ]);
 
-
 // add a controller 
-$server->addRoute('/hello/*', new class() implements ControllerInterface
-{
-
-    function onOpen(Websocket $connection): void
+$server->route([
+    'match' => '/example/*',
+    'controller' => new class() implements ControllerInterface
     {
-        $connection->send('Hello');
+        function onOpen(WebSocket $connection): void
+        {
+            print $connection . ' connected. Sending a "Hello".' . PHP_EOL;
+            $connection->send('Hello');
+        }
+
+        function onMessage(WebSocket $from, string $payload, bool $binary): void
+        {
+            print $from . ' sent: ' . $payload . PHP_EOL;
+        }
+
+        function onClose(WebSocket $connection): void
+        {
+            print $connection . ' disconnected.' . PHP_EOL;
+        }
+
+        function onError(WebSocket $connection, \Throwable $error): void
+        {
+            print $connection . ' error: ' . $error->getMessage() . PHP_EOL;
+        }
+
     }
+]);
 
-    function onMessage(Websocket $from, string $payload, bool $binary): void
-    {}
-
-    function onClose(Websocket $connection): void
-    {}
-
-    function onError(Websocket $connection, \Throwable $error): void
-    {
-        print $error->getMessage() . PHP_EOL;
-    }
-
+// This error handler will be called when an exception was thrown
+// by a filter, a controller method or the underlying tcp server.
+$server->on('error', function (Throwable $error) {
+    print 'Server error: ' . $error->getMessage() . PHP_EOL;
 });
 
 $loop->run(); // the react event loop processes socket connections
 ```
 
 
+#### Routing 
+
+This route will match paths starting with `/example/`. 
+```php
+$server->route([
+    'match' => '/example/*',
+    'controller' => $controller
+]);
+```
+Placeholders are implemented using [fnmatch()](http://php.net/manual/en/function.fnmatch.php).
+
+This route will match any path:
+```php
+$server->route([
+    'controller' => $controller
+]);
+```
+
+This route will deny the websocket handshake if the client did not specifiy one 
+of the [subprotocols](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API/Writing_WebSocket_servers#Miscellaneous):
+```php
+$server->route([
+    'protocols' => ['soap'],
+    'controller' => $controller
+]);
+```
+
+
+
+
+#### Request filters
+This filter responds with a HTTP 403
+```php
+$server->filter('example/403', function () {
+    throw ResponseException::create(403);
+});
+```
+
+This filter modifies the request
+```php
+$server->filter('example/add-attribute', function (ServerRequestInterface $request) {
+    return $request->withAttribute('X-filter', 'passed');
+});
+```
+
+This filter allows only the specified origins
+```php
+$server->filter('example/origin', new OriginFilter(['example.com']));
+```
+
+You can provide your or RequestMatcherInterface and RequestFilterInterface
+implementations. Filters can also be added via `route()`: 
+```php
+$server->route([
+    'filter' => function(ServerRequestInterface $request){
+        if ($request->)
+    }
+    'controller' => ...
+]);
+```
+
+
+
+
+#### Authentication
+
+This library does not provide session integration, but provides support for 
+bearer token authentication.  
+
+Extend `AbstractTokenAuthenticator` with your token verification code and 
+optionally use `AuthorizationFilter` as a base for granular acces control.
+
+```php
+// The authenticator should check if the user is known and valid
+$server->filter('*', new MyTokenAuthenticator($secret));
+
+// authorizations filters check if the user is allowed to do something
+$server->filter('/delicate', new AuthorizationFilter(function($user){
+    return $user->hasRole('admin');
+}));
+```
+
+
+
 #### Apache config
+Add the following to a `.htaccess` file to proxy all requests with a `Upgrade: websocket` header to the websocket server.
 ```
 <IfModule mod_rewrite.c>
     RewriteEngine On
