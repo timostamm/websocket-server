@@ -1,0 +1,20 @@
+{
+  "options": {
+    "failByDrop": false
+  },
+  "outdir": "reports/ext_ev",
+  "servers": [
+    {
+      "agent": "TSWS ext_ev",
+      "url": "ws://localhost:8002",
+      "options": {
+        "version": 18
+      }
+    }
+  ],
+  "cases": [
+    "*"
+  ],
+  "exclude-cases": [],
+  "exclude-agent-cases": {}
+}

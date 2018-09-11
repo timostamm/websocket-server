@@ -1,0 +1,37 @@
+{
+  "options": {
+    "failByDrop": false
+  },
+  "outdir": "reports/complete",
+  "servers": [
+    {
+      "agent": "TSWS stream_select",
+      "url": "ws://127.0.0.1:8001",
+      "options": {
+        "version": 18
+      }
+    },
+    {
+      "agent": "TSWS ext_ev",
+      "url": "ws://127.0.0.1:8002",
+      "options": {
+        "version": 18
+      }
+    },
+    {
+      "agent": "AutobahnPython",
+      "url": "ws://127.0.0.1:8010",
+      "options": {
+        "version": 18
+      }
+    }
+  ],
+  "cases": [
+    "*"
+  ],
+  "exclude-cases": [
+    "12.*",
+    "13.*"
+  ],
+  "exclude-agent-cases": {}
+}

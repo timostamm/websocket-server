@@ -2,19 +2,25 @@
 # vi: set ft=ruby :
 
 
+
+# TODO install pecl ev
+
 $script = <<-SCRIPT
 
 export AUTOBAHN_TESTSUITE_VERSION='0.8.0'
 
 echo [install packages]...
 sudo apt update
-sudo apt install -y python python-pip make php-cli && echo DONE || echo FAILED
+sudo apt install -y python python-pip make php-cli php-dev php-pear && echo DONE || echo FAILED
 
 echo [update pip]...
 python -m pip install -U pip && echo DONE || echo FAILED
 
 echo [install autobahntestsuite]...
 python -m pip install autobahntestsuite==0.8.0 --user && echo DONE || echo FAILED
+
+echo [install pecl ev]
+sudo pecl install ev
 
 SCRIPT
 

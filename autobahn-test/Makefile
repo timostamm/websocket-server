@@ -1,23 +1,26 @@
 
-quick:
-	ulimit -n 2048 && php fuzzing/server.php 8000 StreamSelect &
+# StreamSelectLoop - port 8001
+# ExtEvLoop        - port 8002
+# AutobahnPython   - port 8010
+
+stream_select:
+	ulimit -n 2048 && php fuzzing/server.php 8001 StreamSelectLoop &
 	sleep 1
-	wstest -m fuzzingclient -s fuzzing/quick.json
+	wstest -m fuzzingclient -s fuzzing/stream_select.json
 	killall php
 
-profile:
-	php -d 'xdebug.profiler_enable=1' fuzzing/server.php 8000 LibEvent &
+ext_ev:
+	ulimit -n 2048 && php fuzzing/server.php 8002 ExtEvLoop &
 	sleep 1
-	wstest -m fuzzingclient -s fuzzing/profile.json
+	wstest -m fuzzingclient -s fuzzing/ext_ev.json
 	killall php
 
 complete:
-	ulimit -n 2048 && php fuzzing/server.php 8001 LibEvent &
-	ulimit -n 2048 && php fuzzing/server.php 8002 StreamSelect &
-	ulimit -n 2048 && php fuzzing/server.php 8004 LibEv &
-	wstest -m testeeserver -w ws://localhost:8000 &
+	ulimit -n 2048 && php fuzzing/server.php 8001 StreamSelectLoop &
+	ulimit -n 2048 && php fuzzing/server.php 8002 ExtEvLoop &
+	wstest -m testeeserver -w ws://localhost:8010 &
 	sleep 1
-	wstest -m fuzzingclient -s fuzzing/all.json
+	wstest -m fuzzingclient -s fuzzing/complete.json
 	killall php wstest
 
 stop:
