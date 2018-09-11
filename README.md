@@ -8,6 +8,7 @@ A simple nonblocking server dedicated to websockets.
 - passes [Autobahn WebSocket Testsuite](https://htmlpreview.github.io/?https://github.com/timostamm/websocket-server/master/autobahn-test/reports/complete/index.html)
 - does NOT implement compression
 - works well with apache >= 2.4
+- installable via `composer require timostamm/websocket-server`
 - minimal dependencies ([react/socket](https://packagist.org/packages/react/socket), [ratchet/rfc6455](https://packagist.org/packages/ratchet/rfc6455), [guzzlehttp/psr7](https://packagist.org/packages/guzzlehttp/psr7))
 
 Credits for the websocket protocol implementation go to [ratchet/rfc6455](https://github.com/ratchetphp/RFC6455).
