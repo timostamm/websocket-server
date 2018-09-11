@@ -2,3 +2,6 @@
 
 /.vagrant
 /*.log
+index.json
+*case*.html
+*case*.json
