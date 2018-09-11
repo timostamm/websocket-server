@@ -62,17 +62,15 @@ abstract class AbstractTokenAuthenticator implements RequestFilterInterface
     {
         $token = $this->findToken($request);
         if (is_null($token)) {
-            $request = $request->withoutAttribute('token');
-        } else {
-            $request = $request->withAttribute('token', $token);
-
-            $user = $this->decodeToken($token);
-            if (!$user) {
-                throw ResponseException::create(401);
-            }
-            $request = $request->withAttribute('user', $user);
+            throw ResponseException::create(401);
         }
-        return $request;
+        $user = $this->decodeToken($token);
+        if (!$user) {
+            throw ResponseException::create(401);
+        }
+        return $request
+            ->withAttribute('token', $token)
+            ->withAttribute('user', $user);
     }
 
 
