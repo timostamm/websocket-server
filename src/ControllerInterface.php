@@ -6,7 +6,7 @@
  * Time: 08:08
  */
 
-namespace TS\Websockets;
+namespace TS\WebSockets;
 
 
 interface ControllerInterface

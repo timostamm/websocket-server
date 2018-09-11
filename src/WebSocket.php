@@ -6,7 +6,7 @@
  * Time: 20:00
  */
 
-namespace TS\Websockets;
+namespace TS\WebSockets;
 
 
 use Evenement\EventEmitter;
