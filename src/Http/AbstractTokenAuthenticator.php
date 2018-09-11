@@ -33,12 +33,14 @@ use Psr\Http\Message\ServerRequestInterface;
  *   'protocols' => ['auth-token']
  * ]);
  *
- * $server->filter('*', new class extends AbstractTokenAuthenticator {
- *   protected function decodeToken(string $token) {
+ * class MyTokenAuth extends AbstractTokenAuthenticator {
+ *  protected function decodeToken(string $token) {
  *      // decode token and return an object representing a user
  *      // return null for a 401 response or throw your own ResponseException
  *   }
- * });
+ * }
+ *
+ * $server->filter('*', new MyTokenAuth('auth-token-'));
  *
  * Now the requests have a "user" attribute.
  *
@@ -52,9 +54,9 @@ abstract class AbstractTokenAuthenticator implements RequestFilterInterface
     private $protoTokenPrefix;
 
 
-    public function __construct(string $protoTokenPrefix = 'auth-bearer-')
+    public function __construct(string $protoTokenPrefix = 'auth-token-')
     {
-        $this->protoTokenPrefix;
+        $this->protoTokenPrefix = $protoTokenPrefix;
     }
 
 
