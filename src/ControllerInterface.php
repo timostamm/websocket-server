@@ -12,16 +12,16 @@ namespace TS\Websockets;
 interface ControllerInterface
 {
 
-    function onOpen(Websocket $connection): void;
+    function onOpen(WebSocket $connection): void;
 
 
-    function onMessage(Websocket $from, string $payload, bool $binary): void;
+    function onMessage(WebSocket $from, string $payload, bool $binary): void;
 
 
-    function onClose(Websocket $connection): void;
+    function onClose(WebSocket $connection): void;
 
 
-    function onError(Websocket $connection, \Throwable $error): void;
+    function onError(WebSocket $connection, \Throwable $error): void;
 
 
 }

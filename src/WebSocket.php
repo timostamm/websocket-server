@@ -12,7 +12,7 @@ namespace TS\Websockets;
 use Evenement\EventEmitter;
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Messaging\Frame;
-use TS\Websockets\Connections\WebsocketHandler;
+use TS\Websockets\Connections\WebSocketHandler;
 
 
 /**
@@ -26,7 +26,7 @@ use TS\Websockets\Connections\WebsocketHandler;
  * "close"
  *
  */
-class Websocket extends EventEmitter
+class WebSocket extends EventEmitter
 {
 
     private $request;
@@ -34,7 +34,7 @@ class Websocket extends EventEmitter
     private $manager;
 
 
-    public function __construct(WebsocketHandler $manager, ServerRequestInterface $request)
+    public function __construct(WebSocketHandler $manager, ServerRequestInterface $request)
     {
         $this->manager = $manager;
         $this->request = $request;

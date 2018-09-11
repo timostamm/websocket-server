@@ -39,7 +39,7 @@ use function GuzzleHttp\Psr7\str;
  * "error" => \Throwable $throwable
  *
  */
-class WebsocketServer extends EventEmitter implements ServerInterface
+class WebSocketServer extends EventEmitter implements ServerInterface
 {
 
     const EVENT_CONNECTION = 'connection';

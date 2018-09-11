@@ -43,9 +43,9 @@ class HandlerFactory
     }
 
 
-    public function create(ServerRequestInterface $request, ConnectionInterface $tcpConnection): WebsocketHandler
+    public function create(ServerRequestInterface $request, ConnectionInterface $tcpConnection): WebSocketHandler
     {
-        $handler = new WebsocketHandler(
+        $handler = new WebSocketHandler(
             $request,
             $tcpConnection,
             self::closeFrameChecker(),

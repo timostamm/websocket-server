@@ -16,7 +16,7 @@ use Ratchet\RFC6455\Messaging\FrameInterface;
 use Ratchet\RFC6455\Messaging\MessageBuffer;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use React\Socket\ConnectionInterface;
-use TS\Websockets\Websocket;
+use TS\Websockets\WebSocket;
 
 
 /**
@@ -24,7 +24,7 @@ use TS\Websockets\Websocket;
  * Treats a TCP connection as a Websocket connection.
  *
  */
-class WebsocketHandler
+class WebSocketHandler
 {
 
 
@@ -34,7 +34,7 @@ class WebsocketHandler
     /** @var ConnectionInterface */
     protected $tcpConnection;
 
-    /** @var Websocket */
+    /** @var WebSocket */
     protected $webSocket;
 
     protected $closed = false;
@@ -48,7 +48,7 @@ class WebsocketHandler
         callable $exceptionFactory = null
     )
     {
-        $this->webSocket = new Websocket($this, $request);
+        $this->webSocket = new WebSocket($this, $request);
 
         $this->tcpConnection = $tcpConnection;
         $tcpConnection->on('data', [$this, 'onTcpData']);
@@ -65,7 +65,7 @@ class WebsocketHandler
     }
 
 
-    public function getWebSocket(): Websocket
+    public function getWebSocket(): WebSocket
     {
         return $this->webSocket;
     }

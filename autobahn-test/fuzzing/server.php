@@ -1,8 +1,8 @@
 <?php
 
-use TS\Websockets\WebsocketServer;
+use TS\Websockets\WebSocketServer;
 use TS\Websockets\ControllerInterface;
-use TS\Websockets\Websocket;
+use TS\Websockets\WebSocket;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -12,20 +12,20 @@ $port = $argc > 1 ? $argv[1] : 8000;
 $impl = sprintf('React\EventLoop\%s', $argc > 2 ? $argv[2] : 'StreamSelectLoop');
 $loop = new $impl;
 
-$server = new WebsocketServer($loop, [
+$server = new WebSocketServer($loop, [
     'uri' => '127.0.0.1:' . $port
 ]);
 
 print 'Websocket server using ' . $impl . ' listening on ' . $server->getAddress() . PHP_EOL;
 
 $server->addRoute('*', new class implements ControllerInterface {
-    function onMessage(Websocket $from, string $payload, bool $binary): void
+    function onMessage(WebSocket $from, string $payload, bool $binary): void
     {
         $from->send($payload, $binary);
     }
-    function onOpen(Websocket $connection): void {}
-    function onClose(Websocket $connection): void {}
-    function onError(Websocket $connection, \Throwable $error): void {}
+    function onOpen(WebSocket $connection): void {}
+    function onClose(WebSocket $connection): void {}
+    function onError(WebSocket $connection, \Throwable $error): void {}
 });
 
 

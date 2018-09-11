@@ -11,7 +11,7 @@ namespace TS\Websockets\Connections;
 
 use Evenement\EventEmitterInterface;
 use TS\Websockets\ControllerInterface;
-use TS\Websockets\Websocket;
+use TS\Websockets\WebSocket;
 
 
 class ControllerDelegation
@@ -20,14 +20,14 @@ class ControllerDelegation
     /** @var ControllerInterface */
     private $controller;
 
-    /** @var Websocket */
+    /** @var WebSocket */
     private $websocket;
 
     /** @var EventEmitterInterface */
     private $server;
 
 
-    public function __construct(ControllerInterface $controller, Websocket $websocket, EventEmitterInterface $server)
+    public function __construct(ControllerInterface $controller, WebSocket $websocket, EventEmitterInterface $server)
     {
         $this->controller = $controller;
         $this->websocket = $websocket;
