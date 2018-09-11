@@ -48,7 +48,7 @@ class WebsocketServer extends EventEmitter implements ServerInterface
 
     const DEFAULT_SERVER_PARAMS = [
         'request_header_max_size' => 1024 * 16,
-        'uri' => 'tcp://localhost:8080'
+        'uri' => 'tcp://127.0.0.1:8080'
     ];
 
     /** @var array */
