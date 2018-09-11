@@ -4,6 +4,7 @@
 .phpunit
 /phpunit.xml
 /vendor/
+.vagrant
 
 
 # IDEs and editors

@@ -1,0 +1,37 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+$script = <<-SCRIPT
+
+export AUTOBAHN_TESTSUITE_VERSION='0.8.0'
+
+echo [install python-pip]...
+sudo apt install -y python-pip && echo DONE || echo FAILED
+
+echo [update pip]...
+pip install -U pip && echo DONE || echo FAILED
+
+echo [install autobahntestsuite]...
+pip install autobahntestsuite==0.8.0 --user && echo DONE || echo FAILED
+
+echo [install php]...
+sudo apt install -y php-cli && echo DONE || echo FAILED
+
+SCRIPT
+
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu1804"
+  config.vm.box_version = "~>1.8.28"
+  config.vm.box_check_update = false
+
+  config.vm.synced_folder "../", "/vagrant"
+
+  config.vm.provider "virtualbox" do |v|
+  	v.memory = 4000
+  end
+
+  config.vm.provision "shell", inline: $script, privileged: false
+
+end
