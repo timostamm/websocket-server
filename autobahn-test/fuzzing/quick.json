@@ -1,6 +1,6 @@
 {
     "options": {"failByDrop": false}
-  , "outdir": "../reports/rfc"
+  , "outdir": "reports/rfc"
 
   , "servers": [
        {"agent": "Ratchet", "url": "ws://localhost:8000", "options": {"version": 18}}

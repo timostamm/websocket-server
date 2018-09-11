@@ -1,6 +1,6 @@
 {
     "options": {"failByDrop": false}
-  , "outdir": "../reports/ab"
+  , "outdir": "reports/ab"
 
   , "servers": [
         {"agent": "Ratchet/0.4 libevent", "url": "ws://127.0.0.1:8001", "options": {"version": 18}}

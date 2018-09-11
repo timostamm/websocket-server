@@ -1,6 +1,6 @@
 {
     "options": {"failByDrop": false}
-  , "outdir": "../reports/profile"
+  , "outdir": "reports/profile"
 
   , "servers": [
         {"agent": "Ratchet", "url": "ws://127.0.0.1:8000", "options": {"version": 18}}

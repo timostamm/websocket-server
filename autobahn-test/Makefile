@@ -21,4 +21,4 @@ complete:
 	killall php wstest
 
 stop:
-    killall php wstest
+	killall php wstest
