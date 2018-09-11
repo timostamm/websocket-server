@@ -12,7 +12,6 @@ namespace TS\Websockets;
 use Evenement\EventEmitter;
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Messaging\Frame;
-use Ratchet\RFC6455\Messaging\MessageInterface;
 use TS\Websockets\Connections\WebsocketHandler;
 
 
@@ -50,12 +49,6 @@ class Websocket extends EventEmitter
     public function send(string $payload, bool $binary = false): void
     {
         $this->manager->send($payload, $binary);
-    }
-
-
-    public function sendData(MessageInterface $message): void
-    {
-        $this->manager->sendData($message);
     }
 
 

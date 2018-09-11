@@ -11,7 +11,6 @@ namespace TS\Websockets\Connections;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Messaging\CloseFrameChecker;
-use Ratchet\RFC6455\Messaging\DataInterface;
 use Ratchet\RFC6455\Messaging\Frame;
 use Ratchet\RFC6455\Messaging\FrameInterface;
 use Ratchet\RFC6455\Messaging\MessageBuffer;
@@ -84,27 +83,6 @@ class WebsocketHandler
         $frame = $this->buffer->newFrame($payload, true, $op);
         $this->tcpConnection->write($frame->getContents());
     }
-
-
-    public function sendData(DataInterface $data): void
-    {
-        if ($this->closed) {
-            throw new \BadMethodCallException('Cannot send data, socket is closed.');
-        }
-        if ($this->closing) {
-            throw new \BadMethodCallException('Cannot send data, socket is closing.');
-        }
-        $this->tcpConnection->write($data->getContents());
-    }
-
-
-    /*
-    public function sendPing($payload): void
-    {
-        $frame = $this->buffer->newFrame($payload, true, Frame::OP_PING);
-        $this->tcpConnection->write($frame->getContents());
-    }
-    */
 
 
     public function startClose(int $code): void
@@ -206,7 +184,7 @@ class WebsocketHandler
 
             case Frame::OP_PING:
 
-                // TODO only if previously sent a ping!
+                // When we get a ping, send back a pong with the exact same Payload Data as the ping
 
                 $frame = $this->buffer->newFrame($frame->getPayload(), true, Frame::OP_PONG);
                 $this->tcpConnection->write($frame->getContents());
@@ -215,11 +193,8 @@ class WebsocketHandler
 
             case Frame::OP_PONG:
 
-                // TODO
-                //var_dump("connMan got pong");
+                // We do not initiate pings and ignore all pongs
 
-                //$pongReceiver = $this->pongReceiver;
-                //$pongReceiver($frame, $conn);
                 break;
         }
     }
