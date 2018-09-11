@@ -19,9 +19,9 @@ $server = new WebsocketServer($loop, [
 print 'Websocket server using ' . $impl . ' listening on ' . $server->getAddress() . PHP_EOL;
 
 $server->addRoute('*', new class implements ControllerInterface {
-    function onMessage(Websocket $from, MessageInterface $message): void
+    function onMessage(Websocket $from, string $payload, bool $binary): void
     {
-        $from->sendData($message);
+        $from->send($payload, $binary);
     }
     function onOpen(Websocket $connection): void {}
     function onClose(Websocket $connection): void {}

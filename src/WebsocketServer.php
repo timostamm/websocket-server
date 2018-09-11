@@ -15,9 +15,8 @@ use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
 use React\Socket\TcpServer;
-use TS\Websockets\Connections\ConnectionFactory;
-use TS\Websockets\Connections\ConnectionFactoryInterface;
 use TS\Websockets\Connections\ControllerDelegation;
+use TS\Websockets\Connections\HandlerFactory;
 use TS\Websockets\Http\FilterCollection;
 use TS\Websockets\Http\RequestFilterInterface;
 use TS\Websockets\Http\RequestParser;
@@ -63,8 +62,8 @@ class WebsocketServer extends EventEmitter implements ServerInterface
     /** @var WebsocketNegotiator */
     protected $negotiator;
 
-    /** @var ConnectionFactoryInterface */
-    protected $connectionFactory;
+    /** @var HandlerFactory */
+    protected $handlerFactory;
 
     /** @var TcpServer */
     protected $tcpServer;
@@ -106,7 +105,7 @@ class WebsocketServer extends EventEmitter implements ServerInterface
 
         $this->serverParams = array_replace([], self::DEFAULT_SERVER_PARAMS, $serverParams);
         $this->requestParser = $this->createRequestParser();
-        $this->connectionFactory = $this->createConnectionFactory();
+        $this->handlerFactory = $this->createHandlerFactory();
         $this->negotiator = $this->createNegotiator();
         $this->tcpServer = $this->createTcpServer($loop);
         $this->tcpServer->on('connection', function (ConnectionInterface $tcpConnection) {
@@ -215,18 +214,19 @@ class WebsocketServer extends EventEmitter implements ServerInterface
 
         $tcpConnection->write(str($response));
 
-        $websocket = $this->connectionFactory->createConnection($request, $tcpConnection);
+        $handler = $this->handlerFactory->create($request, $tcpConnection);
 
         new ControllerDelegation(
             $route->getController(),
-            $websocket, $this
+            $handler->getWebSocket(),
+            $this
         );
     }
 
 
-    protected function createConnectionFactory(): ConnectionFactoryInterface
+    protected function createHandlerFactory(): HandlerFactory
     {
-        return new ConnectionFactory();
+        return new HandlerFactory();
     }
 
     protected function createNegotiator(): WebsocketNegotiator

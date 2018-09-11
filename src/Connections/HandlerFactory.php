@@ -12,10 +12,9 @@ namespace TS\Websockets\Connections;
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Messaging\CloseFrameChecker;
 use React\Socket\ConnectionInterface;
-use TS\Websockets\Websocket;
 
 
-class ConnectionFactory implements ConnectionFactoryInterface
+class HandlerFactory
 {
 
     private static $closeFrameCheckerSingleton;
@@ -44,15 +43,15 @@ class ConnectionFactory implements ConnectionFactoryInterface
     }
 
 
-    public function createConnection(ServerRequestInterface $request, ConnectionInterface $tcpConnection): Websocket
+    public function create(ServerRequestInterface $request, ConnectionInterface $tcpConnection): WebsocketHandler
     {
-        $manager = new ConnectionManager(
+        $handler = new WebsocketHandler(
             $request,
             $tcpConnection,
             self::closeFrameChecker(),
             self::exceptionFactory()
         );
-        return $manager->getWebSocket();
+        return $handler;
     }
 
 }

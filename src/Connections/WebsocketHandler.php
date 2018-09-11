@@ -11,6 +11,7 @@ namespace TS\Websockets\Connections;
 
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Messaging\CloseFrameChecker;
+use Ratchet\RFC6455\Messaging\DataInterface;
 use Ratchet\RFC6455\Messaging\Frame;
 use Ratchet\RFC6455\Messaging\FrameInterface;
 use Ratchet\RFC6455\Messaging\MessageBuffer;
@@ -24,7 +25,7 @@ use TS\Websockets\Websocket;
  * Treats a TCP connection as a Websocket connection.
  *
  */
-class ConnectionManager
+class WebsocketHandler
 {
 
 
@@ -82,6 +83,18 @@ class ConnectionManager
         $op = $binary ? Frame::OP_BINARY : Frame::OP_TEXT;
         $frame = $this->buffer->newFrame($payload, true, $op);
         $this->tcpConnection->write($frame->getContents());
+    }
+
+
+    public function sendData(DataInterface $data): void
+    {
+        if ($this->closed) {
+            throw new \BadMethodCallException('Cannot send data, socket is closed.');
+        }
+        if ($this->closing) {
+            throw new \BadMethodCallException('Cannot send data, socket is closing.');
+        }
+        $this->tcpConnection->write($data->getContents());
     }
 
 
@@ -173,7 +186,7 @@ class ConnectionManager
             return;
         }
         $payload = $message->getPayload();
-        $binary = $message->getOpcode() === Frame::OP_BINARY;
+        $binary = $message->isBinary();
         $this->webSocket->emit('message', [$payload, $binary]);
     }
 
@@ -181,25 +194,14 @@ class ConnectionManager
     public function onControlFrame(FrameInterface $frame): void
     {
         switch ($frame->getOpCode()) {
+
             case Frame::OP_CLOSE:
 
-                /*
-                $bin = $frame->getPayload();
-                list($closeCode) = array_merge(unpack('n*', substr($bin, 0, 2)));
-                var_dump("connMan got op close with payload: " . strval($closeCode));
-                */
+                // The ratchet MessageBuffer has already processed the close!
 
-                if ($this->closing) {
-                    //var_dump("connMan got op close and already closing - end connection");
-                    $this->tcpConnection->end();
-                    $this->setClosed();
-                } else {
-                    //var_dump("connMan got new op close - responding close");
-                    $frame = $this->buffer->newCloseFrame(Frame::CLOSE_NORMAL);
-                    $this->tcpConnection->write($frame->getContents());
-                    $this->closing = true;
-                    $this->webSocket->emit('close');
-                }
+                $this->closing = true;
+                $this->tcpConnection->end($frame->getContents());
+
                 break;
 
             case Frame::OP_PING:
