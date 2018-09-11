@@ -42,7 +42,8 @@ class WebsocketNegotiator
     public function handshake(ServerRequestInterface $request, array $subProtocols): ResponseInterface
     {
         $this->negotiator->setSupportedSubProtocols($subProtocols);
-        $response = $this->negotiator->handshake($request);
+        $response = $this->negotiator->handshake($request)
+            ->withHeader('X-Powered-By', 'ratchet/rfc6455');
         if ($response->getStatusCode() !== self::HTTP_SWITCHING_PROTOCOLS) {
             throw new ResponseException($response);
         }
