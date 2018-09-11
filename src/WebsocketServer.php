@@ -104,7 +104,7 @@ class WebsocketServer extends EventEmitter implements ServerInterface
         $this->routes = new RouteCollection();
         $this->filters = new FilterCollection();
 
-        $this->serverParams = array_replace($serverParams, self::DEFAULT_SERVER_PARAMS);
+        $this->serverParams = array_replace([], self::DEFAULT_SERVER_PARAMS, $serverParams);
         $this->requestParser = $this->createRequestParser();
         $this->connectionFactory = $this->createConnectionFactory();
         $this->negotiator = $this->createNegotiator();
