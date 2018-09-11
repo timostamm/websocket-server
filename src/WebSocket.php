@@ -29,15 +29,12 @@ use TS\Websockets\Connections\WebSocketHandler;
 class WebSocket extends EventEmitter
 {
 
-    private $request;
-
-    private $manager;
+    private $handler;
 
 
-    public function __construct(WebSocketHandler $manager, ServerRequestInterface $request)
+    public function __construct(WebSocketHandler $handler)
     {
-        $this->manager = $manager;
-        $this->request = $request;
+        $this->handler = $handler;
     }
 
 
@@ -48,7 +45,7 @@ class WebSocket extends EventEmitter
      */
     public function send(string $payload, bool $binary = false): void
     {
-        $this->manager->send($payload, $binary);
+        $this->handler->send($payload, $binary);
     }
 
 
@@ -58,7 +55,7 @@ class WebSocket extends EventEmitter
      */
     public function close($code = Frame::CLOSE_NORMAL): void
     {
-        $this->manager->startClose($code);
+        $this->handler->startClose($code);
     }
 
 
@@ -69,7 +66,16 @@ class WebSocket extends EventEmitter
      */
     public function getRequest(): ServerRequestInterface
     {
-        return $this->request;
+        return $this->handler->getRequest();
+    }
+
+
+    /**
+     * @return null|string remote address (URI) or null if unknown
+     */
+    public function getRemoteAddress(): ?string
+    {
+        return $this->handler->getTcpConnection()->getRemoteAddress();
     }
 
 
@@ -81,8 +87,8 @@ class WebSocket extends EventEmitter
      */
     public function isClosed(): bool
     {
-        return $this->manager->isClosed()
-            || $this->manager->isClosing();
+        return $this->handler->isClosed()
+            || $this->handler->isClosing();
     }
 
 

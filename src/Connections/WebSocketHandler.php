@@ -34,6 +34,9 @@ class WebSocketHandler
     /** @var ConnectionInterface */
     protected $tcpConnection;
 
+    /** @var ServerRequestInterface */
+    protected $request;
+
     /** @var WebSocket */
     protected $webSocket;
 
@@ -48,8 +51,8 @@ class WebSocketHandler
         callable $exceptionFactory = null
     )
     {
-        $this->webSocket = new WebSocket($this, $request);
-
+        $this->webSocket = new WebSocket($this);
+        $this->request = $request;
         $this->tcpConnection = $tcpConnection;
         $tcpConnection->on('data', [$this, 'onTcpData']);
         $tcpConnection->on('error', [$this, 'onTcpError']);
@@ -68,6 +71,18 @@ class WebSocketHandler
     public function getWebSocket(): WebSocket
     {
         return $this->webSocket;
+    }
+
+
+    public function getTcpConnection(): ConnectionInterface
+    {
+        return $this->tcpConnection;
+    }
+
+
+    public function getRequest(): ServerRequestInterface
+    {
+        return $this->request;
     }
 
 
