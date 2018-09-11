@@ -1,7 +1,6 @@
 <?php
 
 use React\EventLoop\LoopInterface;
-use TS\Websockets\ControllerInterface;
 use TS\Websockets\WebSocket;
 use TS\Websockets\WebSocketServer;
 
@@ -16,26 +15,11 @@ $server = new WebSocketServer($loop, ['uri' => $uri]);
 
 print '[server.php] Websocket server using ' . $loopClass . ' listening on ' . $server->getAddress() . PHP_EOL;
 
-
-$server->route('*', new class implements ControllerInterface
-{
-    function onMessage(WebSocket $from, string $payload, bool $binary): void
-    {
+$server->route([
+    'on_message' => function (WebSocket $from, string $payload, bool $binary) {
         $from->send($payload, $binary);
     }
-
-    function onOpen(WebSocket $socket): void
-    {
-    }
-
-    function onClose(WebSocket $socket): void
-    {
-    }
-
-    function onError(WebSocket $socket, \Throwable $error): void
-    {
-    }
-});
+]);
 
 
 $loop->run();
