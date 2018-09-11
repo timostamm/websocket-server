@@ -92,4 +92,10 @@ class WebSocket extends EventEmitter
     }
 
 
+    public function __toString()
+    {
+        return $this->getRemoteAddress();
+    }
+
+
 }

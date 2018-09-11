@@ -17,6 +17,7 @@ use React\Socket\ServerInterface;
 use React\Socket\TcpServer;
 use TS\Websockets\Connections\ControllerDelegation;
 use TS\Websockets\Connections\HandlerFactory;
+use TS\Websockets\Http\CallbackRequestFilter;
 use TS\Websockets\Http\FilterCollection;
 use TS\Websockets\Http\RequestFilterInterface;
 use TS\Websockets\Http\RequestParser;
@@ -41,9 +42,6 @@ use function GuzzleHttp\Psr7\str;
  */
 class WebSocketServer extends EventEmitter implements ServerInterface
 {
-
-    const EVENT_CONNECTION = 'connection';
-    const EVENT_ERROR = 'error';
 
     const DEFAULT_SERVER_PARAMS = [
         'request_header_max_size' => 1024 * 16,
@@ -91,6 +89,8 @@ class WebSocketServer extends EventEmitter implements ServerInterface
      * "request_header_max_size" Maximum header size for HTTP
      * requests.
      *
+     * "on_error" A callback for the error event.
+     *
      * Server parameters are available in every request via
      * getServerParams()
      *
@@ -102,7 +102,6 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     {
         $this->routes = new RouteCollection();
         $this->filters = new FilterCollection();
-
         $this->serverParams = array_replace([], self::DEFAULT_SERVER_PARAMS, $serverParams);
         $this->requestParser = $this->createRequestParser();
         $this->handlerFactory = $this->createHandlerFactory();
@@ -114,58 +113,94 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         $this->tcpServer->on('error', function (\Throwable $error) {
             $this->emit('error', [$error]);
         });
+        $on_error = $serverParams['on_error'] ?? null;
+        if ($on_error) {
+            if (!is_callable($on_error)) {
+                throw new \InvalidArgumentException('Invalid value for option "on_error". Expected a callable.');
+            }
+            $this->on('error', $on_error);
+        }
     }
 
 
     /**
-     * @param string $urlPattern
-     * @param ControllerInterface|string $controller
+     *
+     * Convenience method to add a route.
+     *
+     * Supports the following options:
+     *
+     *
+     * "match" string | RequestMatcherInterface
+     *
+     * A pattern compatible with fnmatch() or an implementation of
+     * RequestMatcherInterface.
+     *
+     *
+     * "protocol" array
+     *
+     * An array of subprotocols for this route.
+     *
+     *
+     * "controller" string | ControllerInterface
+     *
+     * The name of a class implementing ControllerInterface without
+     * constructor arguments or an instance of a ControllerInterface.
+     *
+     *
+     * "on_open", "on_close", "on_message", "on_error" callable
+     *
+     * Alternative to the "controller" option, you can provide
+     * callbacks and an anonymous controller will be created for
+     * you.
+     *
+     *
+     * "filter" RequestFilterInterface | RequestFilterInterface[]
+     *
+     * Add one or more filters with the same request matcher as
+     * the route.
+     *
+     *
      * @param array $options
      */
-    public function addRoute(string $urlPattern, $controller, array $options = []): void
+    public function route(array $options): void
     {
-        if ($controller instanceof ControllerInterface) {
-            $ctrl = $controller;
-        } else if (is_string($controller)) {
-            try {
-                $ref = new \ReflectionClass($controller);
-                $ctrl = $ref->newInstance();
-            } catch (\Exception $exception) {
-                $msg = sprintf('Unable to instantiate controller %s: %s', $controller, $exception->getMessage());
-                throw new \InvalidArgumentException($msg, 0, $exception);
-            }
-            if ($ctrl instanceof ControllerInterface) {
-                $msg = sprintf('Invalid argument for controller. Value must be a controller instance or a class name.');
-                throw new \InvalidArgumentException($msg);
-            }
-        } else {
-            $msg = sprintf('Invalid argument for controller. Value must be a controller instance or a class name.');
-            throw new \InvalidArgumentException($msg);
+        $route = Route::create($options);
+        $this->routes->add($route);
+        $filter = $options['filter'] ?? [];
+        foreach (is_array($filter) ? $filter : [$filter] as $item) {
+            $this->filter($route->getRequestMatcher(), $item);
         }
-
-
-        $matcher = new UrlPatternRequestMatcher($urlPattern);
-
-        $protocols = $options['protocols'] ?? [];
-
-        $route = new Route($matcher, $ctrl, $protocols);
-
-        $this->routes->add($route);
     }
 
 
-    public function addRouteInstance(Route $route): void
+    public function addRoute(Route $route): void
     {
         $this->routes->add($route);
     }
 
 
-    public function addFilter(string $urlPattern, RequestFilterInterface $filter): void
+    /**
+     * Convenience method to add HTTP request filters.
+     *
+     * @param string|RequestMatcherInterface $match
+     * @param RequestFilterInterface|callable $filter
+     */
+    public function filter($match, $filter): void
     {
-        $this->filters->add(new UrlPatternRequestMatcher($urlPattern), $filter);
+        if (is_callable($filter)) {
+            $filter = new CallbackRequestFilter($filter);
+        } else if (!$filter instanceof RequestFilterInterface) {
+            throw new \InvalidArgumentException('Invalid argument $filter. Expected callable or RequestFilterInterface.');
+        }
+        if (is_string($match)) {
+            $match = new UrlPatternRequestMatcher($match);
+        } else if (!$match instanceof RequestMatcherInterface) {
+            throw new \InvalidArgumentException('Invalid argument $match. Expected string or RequestMatcherInterface.');
+        }
+        $this->filters->add($match, $filter);
     }
 
-    public function addFilterInstance(RequestMatcherInterface $matcher, RequestFilterInterface $filter): void
+    public function addFilter(RequestMatcherInterface $matcher, RequestFilterInterface $filter): void
     {
         $this->filters->add($matcher, $filter);
     }
