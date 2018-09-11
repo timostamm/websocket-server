@@ -6,12 +6,10 @@
  * Time: 15:24
  */
 
-namespace Http;
+namespace TS\WebSockets\Http;
 
 
 use Psr\Http\Message\ServerRequestInterface;
-use TS\WebSockets\Http\RequestFilterInterface;
-use TS\WebSockets\Http\ResponseException;
 
 
 class AuthorizationFilter implements RequestFilterInterface
