@@ -20,3 +20,5 @@ complete:
 	wstest -m fuzzingclient -s fuzzing/all.json
 	killall php wstest
 
+stop:
+    killall php wstest

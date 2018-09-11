@@ -3,7 +3,6 @@
 
 Requirements
 - get vagrant
-- `vagrant plugin install vagrant-vbguest`
 
 
 Start test vm
