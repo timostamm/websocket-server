@@ -45,29 +45,31 @@ class WebSocketServer extends EventEmitter implements ServerInterface
 
     const DEFAULT_SERVER_PARAMS = [
         'request_header_max_size' => 1024 * 16,
-        'uri' => 'tcp://127.0.0.1:8080'
+        'uri' => 'tcp://127.0.0.1:8080',
+        'X-Powered-By' => 'ratchet/rfc6455',
+        'strict_sub_protocol_check' => true
     ];
 
     /** @var array */
     protected $serverParams;
 
     /** @var RouteCollection */
-    protected $routes;
+    private $routes;
 
     /** @var FilterCollection */
-    protected $filters;
+    private $filters;
 
     /** @var WebsocketNegotiator */
-    protected $negotiator;
+    private $negotiator;
 
     /** @var HandlerFactory */
-    protected $handlerFactory;
+    private $handlerFactory;
 
     /** @var TcpServer */
-    protected $tcpServer;
+    private $tcpServer;
 
     /** @var RequestParserInterface */
-    protected $requestParser;
+    private $requestParser;
 
 
     /**
@@ -261,12 +263,12 @@ class WebSocketServer extends EventEmitter implements ServerInterface
 
     protected function createHandlerFactory(): HandlerFactory
     {
-        return new HandlerFactory();
+        return new HandlerFactory($this->serverParams);
     }
 
     protected function createNegotiator(): WebsocketNegotiator
     {
-        return new WebsocketNegotiator();
+        return new WebsocketNegotiator($this->serverParams);
     }
 
     protected function createRequestParser(): RequestParserInterface

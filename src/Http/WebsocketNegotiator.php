@@ -23,13 +23,18 @@ class WebsocketNegotiator
     /** @var NegotiatorInterface */
     protected $negotiator;
 
+    private $xPoweredBy;
 
-    public function __construct(NegotiatorInterface $handshakeNegotiator = null)
+
+    public function __construct(array $serverParams, NegotiatorInterface $handshakeNegotiator = null)
     {
         $this->negotiator = $handshakeNegotiator
             ?? new ServerNegotiator(new RequestVerifier());
 
-        $this->negotiator->setStrictSubProtocolCheck(true);
+        $strict = $serverParams['strict_sub_protocol_check'] ?? true;
+        $this->negotiator->setStrictSubProtocolCheck($strict);
+
+        $this->xPoweredBy = $serverParams['X-Powered-By'] ?? 'ratchet/rfc6455';
     }
 
 
@@ -43,7 +48,7 @@ class WebsocketNegotiator
     {
         $this->negotiator->setSupportedSubProtocols($subProtocols);
         $response = $this->negotiator->handshake($request)
-            ->withHeader('X-Powered-By', 'ratchet/rfc6455');
+            ->withHeader('X-Powered-By', $this->xPoweredBy);
         if ($response->getStatusCode() !== self::HTTP_SWITCHING_PROTOCOLS) {
             throw new ResponseException($response);
         }

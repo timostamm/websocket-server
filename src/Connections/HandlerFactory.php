@@ -43,6 +43,11 @@ class HandlerFactory
     }
 
 
+    public function __construct(array $serverParams)
+    {
+    }
+
+
     public function create(ServerRequestInterface $request, ConnectionInterface $tcpConnection): WebSocketHandler
     {
         $handler = new WebSocketHandler(
