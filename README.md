@@ -1,5 +1,7 @@
 # WebSocket Server
 
+[![Build Status](https://api.travis-ci.org/timostamm/websocket-server.png)](https://travis-ci.org/timostamm/websocket-server)
+
 A simple nonblocking server dedicated to websockets.
 
 - upgrades HTTP requests
