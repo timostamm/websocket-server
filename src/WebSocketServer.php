@@ -23,7 +23,7 @@ use TS\WebSockets\Http\RequestFilterInterface;
 use TS\WebSockets\Http\RequestMatcherInterface;
 use TS\WebSockets\Http\RequestParser;
 use TS\WebSockets\Http\ResponseException;
-use TS\WebSockets\Protocol\TcpConnnections;
+use TS\WebSockets\Protocol\TcpConnections;
 use TS\WebSockets\Protocol\WebSocketHandlerFactory;
 use TS\WebSockets\Protocol\WebSocketNegotiator;
 use TS\WebSockets\Routing\ControllerDelegationFactory;
@@ -84,7 +84,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     /** @var TcpServer */
     protected $tcpServer;
 
-    /** @var TcpConnnections */
+    /** @var TcpConnections */
     protected $tcpConnections;
 
     /** @var Deferred */
@@ -134,7 +134,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         $this->webSocketHandlers = new WebSocketHandlerFactory($this->serverParams);
         $this->controllerDelegations = new ControllerDelegationFactory($this->serverParams, $onError);
         $this->tcpServer = $this->createTcpServer($loop);
-        $this->tcpConnections = new TcpConnnections($this->tcpServer, function (ConnectionInterface $connection) {
+        $this->tcpConnections = new TcpConnections($this->tcpServer, function (ConnectionInterface $connection) {
             $this->onTcpConnection($connection);
         }, $onError);
         $this->addShutdownSignals($this->serverParams);

@@ -16,7 +16,7 @@ use React\Socket\ServerInterface;
 use function React\Promise\resolve;
 
 
-class TcpConnnections
+class TcpConnections
 {
 
     /** @var ServerInterface */
