@@ -10,7 +10,6 @@ namespace TS\WebSockets\Http;
 
 
 use Psr\Http\Message\ServerRequestInterface;
-use TS\WebSockets\Routing\RequestMatcherInterface;
 
 
 class FilterCollection

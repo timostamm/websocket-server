@@ -12,7 +12,7 @@ namespace TS\WebSockets;
 use Evenement\EventEmitter;
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Messaging\Frame;
-use TS\WebSockets\Connections\WebSocketHandler;
+use TS\WebSockets\Protocol\WebSocketHandler;
 
 
 /**
@@ -94,7 +94,10 @@ class WebSocket extends EventEmitter
 
     public function __toString()
     {
-        return $this->getRemoteAddress();
+        $address = $this->getRemoteAddress();
+        $ip = trim(parse_url($address, PHP_URL_HOST), '[]');
+        $port = parse_url($address, PHP_URL_PORT);
+        return $ip . ':' . $port;
     }
 
 

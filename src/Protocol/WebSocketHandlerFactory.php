@@ -6,7 +6,7 @@
  * Time: 09:59
  */
 
-namespace TS\WebSockets\Connections;
+namespace TS\WebSockets\Protocol;
 
 
 use Psr\Http\Message\ServerRequestInterface;
@@ -14,7 +14,7 @@ use Ratchet\RFC6455\Messaging\CloseFrameChecker;
 use React\Socket\ConnectionInterface;
 
 
-class HandlerFactory
+class WebSocketHandlerFactory
 {
 
     private static $closeFrameCheckerSingleton;

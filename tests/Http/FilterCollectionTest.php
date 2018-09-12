@@ -13,7 +13,6 @@ use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
-use TS\WebSockets\Routing\RequestMatcherInterface;
 
 class FilterCollectionTest extends TestCase
 {

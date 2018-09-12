@@ -11,6 +11,7 @@ namespace TS\WebSockets\Routing;
 
 use Psr\Http\Message\ServerRequestInterface;
 use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\Http\RequestMatcherInterface;
 
 
 class Route

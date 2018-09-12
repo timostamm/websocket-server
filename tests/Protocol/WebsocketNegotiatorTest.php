@@ -6,7 +6,7 @@
  * Time: 20:15
  */
 
-namespace TS\WebSockets\Http;
+namespace TS\WebSockets\Protocol;
 
 
 use GuzzleHttp\Psr7\Response;
@@ -21,7 +21,7 @@ class WebsocketNegotiatorTest extends TestCase
 {
 
 
-    /** @var WebsocketNegotiator */
+    /** @var WebSocketNegotiator */
     private $subject;
 
 
@@ -32,7 +32,7 @@ class WebsocketNegotiatorTest extends TestCase
     public function setUp()
     {
         $this->neg = $this->createMock(NegotiatorInterface::class);
-        $this->subject = new WebsocketNegotiator([], $this->neg);
+        $this->subject = new WebSocketNegotiator([], $this->neg);
     }
 
 

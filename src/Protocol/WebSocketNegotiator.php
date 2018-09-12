@@ -6,7 +6,7 @@
  * Time: 09:03
  */
 
-namespace TS\WebSockets\Http;
+namespace TS\WebSockets\Protocol;
 
 
 use Psr\Http\Message\ResponseInterface;
@@ -14,8 +14,9 @@ use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Handshake\NegotiatorInterface;
 use Ratchet\RFC6455\Handshake\RequestVerifier;
 use Ratchet\RFC6455\Handshake\ServerNegotiator;
+use TS\WebSockets\Http\ResponseException;
 
-class WebsocketNegotiator
+class WebSocketNegotiator
 {
 
     const HTTP_SWITCHING_PROTOCOLS = 101;

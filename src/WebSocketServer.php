@@ -15,16 +15,16 @@ use React\EventLoop\LoopInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
 use React\Socket\TcpServer;
-use TS\WebSockets\Connections\ControllerDelegation;
-use TS\WebSockets\Connections\HandlerFactory;
+use TS\WebSockets\Routing\ControllerDelegationFactory;
 use TS\WebSockets\Http\FilterCollection;
 use TS\WebSockets\Http\MatcherFactory;
 use TS\WebSockets\Http\RequestFilterInterface;
+use TS\WebSockets\Http\RequestMatcherInterface;
 use TS\WebSockets\Http\RequestParser;
 use TS\WebSockets\Http\RequestParserInterface;
 use TS\WebSockets\Http\ResponseException;
-use TS\WebSockets\Http\WebsocketNegotiator;
-use TS\WebSockets\Routing\RequestMatcherInterface;
+use TS\WebSockets\Protocol\WebSocketHandlerFactory;
+use TS\WebSockets\Protocol\WebSocketNegotiator;
 use TS\WebSockets\Routing\Route;
 use TS\WebSockets\Routing\RouteCollection;
 use function GuzzleHttp\Psr7\str;
@@ -52,26 +52,29 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     /** @var array */
     protected $serverParams;
 
-    /** @var RouteCollection */
-    protected $routes;
-
-    /** @var FilterCollection */
-    protected $filters;
+    /** @var RequestParserInterface */
+    protected $requestParser;
 
     /** @var MatcherFactory */
     protected $matcherFactory;
 
-    /** @var WebsocketNegotiator */
+    /** @var FilterCollection */
+    protected $filters;
+
+    /** @var RouteCollection */
+    protected $routes;
+
+    /** @var WebSocketNegotiator */
     protected $negotiator;
 
-    /** @var HandlerFactory */
+    /** @var WebSocketHandlerFactory */
     protected $handlerFactory;
+
+    /** @var ControllerDelegationFactory */
+    protected $controllerDelegations;
 
     /** @var TcpServer */
     protected $tcpServer;
-
-    /** @var RequestParserInterface */
-    protected $requestParser;
 
 
     /**
@@ -102,13 +105,18 @@ class WebSocketServer extends EventEmitter implements ServerInterface
      */
     public function __construct(LoopInterface $loop, array $serverParams = [])
     {
-        $this->serverParams = array_replace([], self::DEFAULT_SERVER_PARAMS, $serverParams);
-        $this->matcherFactory = new MatcherFactory($this->serverParams);
-        $this->routes = new RouteCollection($this->serverParams, $this->matcherFactory);
-        $this->filters = new FilterCollection($this->serverParams);
-        $this->handlerFactory = new HandlerFactory($this->serverParams);
-        $this->negotiator = new WebsocketNegotiator($this->serverParams);
+        $this->serverParams = array_replace([], self::DEFAULT_SERVER_PARAMS, $serverParams, [
+            'loop' => $loop
+        ]);
         $this->requestParser = new RequestParser($this->serverParams);
+        $this->matcherFactory = new MatcherFactory($this->serverParams);
+        $this->filters = new FilterCollection($this->serverParams);
+        $this->routes = new RouteCollection($this->serverParams, $this->matcherFactory);
+        $this->negotiator = new WebSocketNegotiator($this->serverParams);
+        $this->handlerFactory = new WebSocketHandlerFactory($this->serverParams);
+        $this->controllerDelegations = new ControllerDelegationFactory($this->serverParams, function (\Throwable $error) {
+            $this->emit('error', [$error]);
+        });
         $this->tcpServer = $this->createTcpServer($loop);
         $this->addTcpListeners($this->tcpServer);
     }
@@ -189,6 +197,17 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     }
 
 
+    protected function addTcpListeners(ServerInterface $tcpServer): void
+    {
+        $tcpServer->on('connection', function (ConnectionInterface $tcpConnection) {
+            $this->onTcpConnection($tcpConnection);
+        });
+        $tcpServer->on('error', function (\Throwable $error) {
+            $this->emit('error', [$error]);
+        });
+    }
+
+
     protected function onTcpConnection(ConnectionInterface $tcpConnection): void
     {
         $this->requestParser->readRequest($tcpConnection)
@@ -241,11 +260,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
 
         $handler = $this->handlerFactory->create($request, $tcpConnection);
 
-        new ControllerDelegation(
-            $route->getController(),
-            $handler->getWebSocket(),
-            $this
-        );
+        $this->controllerDelegations->add($route->getController(), $handler->getWebSocket());
     }
 
 
@@ -297,17 +312,6 @@ class WebSocketServer extends EventEmitter implements ServerInterface
             }
             return new TcpServer($uri, $loop, $tcp_context);
         }
-    }
-
-
-    protected function addTcpListeners(ServerInterface $tcpServer): void
-    {
-        $tcpServer->on('connection', function (ConnectionInterface $tcpConnection) {
-            $this->onTcpConnection($tcpConnection);
-        });
-        $tcpServer->on('error', function (\Throwable $error) {
-            $this->emit('error', [$error]);
-        });
     }
 
 

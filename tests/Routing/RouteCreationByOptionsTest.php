@@ -13,6 +13,7 @@ use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\Http\MatcherFactory;
+use TS\WebSockets\Http\RequestMatcherInterface;
 use TS\WebSockets\WebSocket;
 
 

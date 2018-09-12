@@ -9,10 +9,6 @@
 namespace TS\WebSockets\Http;
 
 
-use TS\WebSockets\Routing\RequestMatcherInterface;
-use TS\WebSockets\Routing\UrlPatternRequestMatcher;
-
-
 class MatcherFactory
 {
 

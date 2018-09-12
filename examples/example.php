@@ -63,7 +63,7 @@ $server->route([
 
         function onMessage(WebSocket $from, string $payload, bool $binary): void
         {
-            print $from . ' sent: ' . $payload . PHP_EOL;
+            print $from . ' received: ' . $payload . PHP_EOL;
         }
 
         function onClose(WebSocket $socket): void

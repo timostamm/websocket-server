@@ -12,6 +12,7 @@ namespace TS\WebSockets\Routing;
 use Psr\Http\Message\ServerRequestInterface;
 use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\Http\MatcherFactory;
+use TS\WebSockets\Http\RequestMatcherInterface;
 use TS\WebSockets\WebSocket;
 
 

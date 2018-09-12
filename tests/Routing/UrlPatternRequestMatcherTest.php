@@ -11,6 +11,7 @@ namespace TS\WebSockets\Routing;
 
 use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
+use TS\WebSockets\Http\UrlPatternRequestMatcher;
 
 class UrlPatternRequestMatcherTest extends TestCase
 {

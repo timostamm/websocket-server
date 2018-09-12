@@ -92,7 +92,6 @@ $server->route([
 
 
 
-
 #### Request filters
 This filter responds with a HTTP 403
 ```php
@@ -168,4 +167,62 @@ var ws = new WebSocket("ws://localhost:23080/hello/foo");
 ws.onmessage = function (event) {
     console.log("message", event.data);
 };
+```
+
+
+#### More controller features
+
+You can implement one or more of the following interfaces to get access to the loop, 
+clients connected to this controller, etc.
+
+```php
+class MyCtrl implements ControllerInterface, ServerParamsAwareInterface, LoopAwareInterface, ConnectionListAwareInterface, OnLastCloseInterface, OnFirstOpenInterface
+{
+    function setServerParams(array $serverParams): void
+    {
+        print 'Got server params.' . PHP_EOL;
+    }
+
+    function setLoop(\React\EventLoop\LoopInterface $loop, callable $exceptionHandler): void
+    {
+        print 'Got loop.' . PHP_EOL;
+    }
+
+    function setConnections(\SplObjectStorage $webSockets): void
+    {
+        print 'Got connection list.' . PHP_EOL;
+    }
+
+    function onLastClose(WebSocket $socket): void
+    {
+        print 'Last connection closed.' . PHP_EOL;
+    }
+
+    function onFirstOpen(WebSocket $socket): void
+    {
+        print 'First connection opened.' . PHP_EOL;
+    }
+
+    function onOpen(WebSocket $socket): void
+    {
+        print $socket . ' connected. Sending a "Hello".' . PHP_EOL;
+        $socket->send('Hello');
+    }
+
+    function onMessage(WebSocket $from, string $payload, bool $binary): void
+    {
+        print $from . ' received: ' . $payload . PHP_EOL;
+    }
+
+    function onClose(WebSocket $socket): void
+    {
+        print $socket . ' disconnected.' . PHP_EOL;
+    }
+
+    function onError(WebSocket $socket, \Throwable $error): void
+    {
+        print $socket . ' error: ' . $error->getMessage() . PHP_EOL;
+    }
+
+}
 ```
