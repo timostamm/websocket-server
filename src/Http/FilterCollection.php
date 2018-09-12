@@ -19,14 +19,18 @@ class FilterCollection
     /** @var RequestFilterInterface[] */
     private $filters;
 
+    protected $serverParams;
+    protected $matcherFactory;
 
-    public function __construct()
+
+    public function __construct(array $serverParams)
     {
         $this->filters = [];
+        $this->serverParams = $serverParams;
     }
 
 
-    public function add(RequestMatcherInterface $matcher, RequestFilterInterface $filter): void
+    final public function add(RequestMatcherInterface $matcher, RequestFilterInterface $filter): void
     {
         $this->filters[] = [$matcher, $filter];
     }
@@ -37,7 +41,7 @@ class FilterCollection
      * @return ServerRequestInterface
      * @throw ResponseException
      */
-    public function apply(ServerRequestInterface $request): ServerRequestInterface
+    final public function apply(ServerRequestInterface $request): ServerRequestInterface
     {
         foreach ($this->filters as list($matcher, $filter)) {
             /** @var RequestMatcherInterface $matcher */
@@ -48,5 +52,17 @@ class FilterCollection
         }
         return $request;
     }
+
+
+    public function create($filter): RequestFilterInterface
+    {
+        if (is_callable($filter)) {
+            $filter = new CallbackRequestFilter($filter);
+        } else if (!$filter instanceof RequestFilterInterface) {
+            throw new \InvalidArgumentException('Invalid argument $filter. Expected callable or RequestFilterInterface.');
+        }
+        return $filter;
+    }
+
 
 }

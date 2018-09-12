@@ -12,17 +12,25 @@ namespace TS\WebSockets\Routing;
 use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\Http\MatcherFactory;
 use TS\WebSockets\WebSocket;
 
 
-class RouteTest extends TestCase
+class RouteCreationByOptionsTest extends TestCase
 {
 
+    /** @var RouteCollection */
+    private $routes;
+
+    protected function setUp()
+    {
+        $this->routes = new RouteCollection([], new MatcherFactory([]));
+    }
 
     public function testMatchDefault()
     {
         $ctrl = $this->createMock(ControllerInterface::class);
-        $route = Route::create([
+        $route = $this->routes->create([
             'controller' => $ctrl
         ]);
         $matches = $route->matches(new ServerRequest('GET', 'any'));
@@ -32,7 +40,7 @@ class RouteTest extends TestCase
     public function testMatchPattern()
     {
         $ctrl = $this->createMock(ControllerInterface::class);
-        $route = Route::create([
+        $route = $this->routes->create([
             'controller' => $ctrl,
             'match' => '/foo/*'
         ]);
@@ -49,7 +57,7 @@ class RouteTest extends TestCase
             ->method('matches')
             ->willReturn(true);
         $ctrl = $this->createMock(ControllerInterface::class);
-        $route = Route::create([
+        $route = $this->routes->create([
             'controller' => $ctrl,
             'match' => $matcher
         ]);
@@ -60,7 +68,7 @@ class RouteTest extends TestCase
     public function testProtocolsDefault()
     {
         $ctrl = $this->createMock(ControllerInterface::class);
-        $route = Route::create([
+        $route = $this->routes->create([
             'controller' => $ctrl
         ]);
         $this->assertCount(0, $route->getSupportedSubProtocols());
@@ -70,7 +78,7 @@ class RouteTest extends TestCase
     {
         $ctrl = $this->createMock(ControllerInterface::class);
         $this->expectException(\InvalidArgumentException::class);
-        Route::create([
+        $this->routes->create([
             'controller' => $ctrl,
             'protocols' => 'str'
         ]);
@@ -79,7 +87,7 @@ class RouteTest extends TestCase
     public function testProtocolsProvided()
     {
         $ctrl = $this->createMock(ControllerInterface::class);
-        $route = Route::create([
+        $route = $this->routes->create([
             'protocols' => ['abc', 'xyz'],
             'controller' => $ctrl
         ]);
@@ -90,14 +98,14 @@ class RouteTest extends TestCase
     public function testControllerMissing()
     {
         $this->expectException(\InvalidArgumentException::class);
-        Route::create([]);
+        $this->routes->create([]);
     }
 
 
     public function testControllerNull()
     {
         $this->expectException(\InvalidArgumentException::class);
-        Route::create([
+        $this->routes->create([
             'controller' => null
         ]);
     }
@@ -106,7 +114,7 @@ class RouteTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('does not implement');
-        Route::create([
+        $this->routes->create([
             'controller' => $this
         ]);
     }
@@ -115,7 +123,7 @@ class RouteTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('got int');
-        Route::create([
+        $this->routes->create([
             'controller' => 123
         ]);
     }
@@ -125,7 +133,7 @@ class RouteTest extends TestCase
         $ctrl = $this->createMock(ControllerInterface::class);
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('You cannot provide option');
-        Route::create([
+        $this->routes->create([
             'controller' => $ctrl,
             'on_open' => function () {
             }
@@ -136,7 +144,7 @@ class RouteTest extends TestCase
     public function testOnX()
     {
         $calls = [];
-        $route = Route::create([
+        $route = $this->routes->create([
             'on_open' => function () use (&$calls) {
                 $calls[] = 'on_open';
             },

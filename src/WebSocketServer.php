@@ -17,8 +17,8 @@ use React\Socket\ServerInterface;
 use React\Socket\TcpServer;
 use TS\WebSockets\Connections\ControllerDelegation;
 use TS\WebSockets\Connections\HandlerFactory;
-use TS\WebSockets\Http\CallbackRequestFilter;
 use TS\WebSockets\Http\FilterCollection;
+use TS\WebSockets\Http\MatcherFactory;
 use TS\WebSockets\Http\RequestFilterInterface;
 use TS\WebSockets\Http\RequestParser;
 use TS\WebSockets\Http\RequestParserInterface;
@@ -27,7 +27,6 @@ use TS\WebSockets\Http\WebsocketNegotiator;
 use TS\WebSockets\Routing\RequestMatcherInterface;
 use TS\WebSockets\Routing\Route;
 use TS\WebSockets\Routing\RouteCollection;
-use TS\WebSockets\Routing\UrlPatternRequestMatcher;
 use function GuzzleHttp\Psr7\str;
 
 
@@ -54,22 +53,25 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     protected $serverParams;
 
     /** @var RouteCollection */
-    private $routes;
+    protected $routes;
 
     /** @var FilterCollection */
-    private $filters;
+    protected $filters;
+
+    /** @var MatcherFactory */
+    protected $matcherFactory;
 
     /** @var WebsocketNegotiator */
-    private $negotiator;
+    protected $negotiator;
 
     /** @var HandlerFactory */
-    private $handlerFactory;
+    protected $handlerFactory;
 
     /** @var TcpServer */
-    private $tcpServer;
+    protected $tcpServer;
 
     /** @var RequestParserInterface */
-    private $requestParser;
+    protected $requestParser;
 
 
     /**
@@ -91,8 +93,6 @@ class WebSocketServer extends EventEmitter implements ServerInterface
      * "request_header_max_size" Maximum header size for HTTP
      * requests.
      *
-     * "on_error" A callback for the error event.
-     *
      * Server parameters are available in every request via
      * getServerParams()
      *
@@ -102,26 +102,15 @@ class WebSocketServer extends EventEmitter implements ServerInterface
      */
     public function __construct(LoopInterface $loop, array $serverParams = [])
     {
-        $this->routes = new RouteCollection();
-        $this->filters = new FilterCollection();
         $this->serverParams = array_replace([], self::DEFAULT_SERVER_PARAMS, $serverParams);
-        $this->requestParser = $this->createRequestParser();
-        $this->handlerFactory = $this->createHandlerFactory();
-        $this->negotiator = $this->createNegotiator();
+        $this->matcherFactory = new MatcherFactory($this->serverParams);
+        $this->routes = new RouteCollection($this->serverParams, $this->matcherFactory);
+        $this->filters = new FilterCollection($this->serverParams);
+        $this->handlerFactory = new HandlerFactory($this->serverParams);
+        $this->negotiator = new WebsocketNegotiator($this->serverParams);
+        $this->requestParser = new RequestParser($this->serverParams);
         $this->tcpServer = $this->createTcpServer($loop);
-        $this->tcpServer->on('connection', function (ConnectionInterface $tcpConnection) {
-            $this->onTcpConnection($tcpConnection);
-        });
-        $this->tcpServer->on('error', function (\Throwable $error) {
-            $this->emit('error', [$error]);
-        });
-        $on_error = $serverParams['on_error'] ?? null;
-        if ($on_error) {
-            if (!is_callable($on_error)) {
-                throw new \InvalidArgumentException('Invalid value for option "on_error". Expected a callable.');
-            }
-            $this->on('error', $on_error);
-        }
+        $this->addTcpListeners($this->tcpServer);
     }
 
 
@@ -166,7 +155,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
      */
     public function route(array $options): void
     {
-        $route = Route::create($options);
+        $route = $this->routes->create($options);
         $this->routes->add($route);
         $filter = $options['filter'] ?? [];
         foreach (is_array($filter) ? $filter : [$filter] as $item) {
@@ -189,17 +178,9 @@ class WebSocketServer extends EventEmitter implements ServerInterface
      */
     public function filter($match, $filter): void
     {
-        if (is_callable($filter)) {
-            $filter = new CallbackRequestFilter($filter);
-        } else if (!$filter instanceof RequestFilterInterface) {
-            throw new \InvalidArgumentException('Invalid argument $filter. Expected callable or RequestFilterInterface.');
-        }
-        if (is_string($match)) {
-            $match = new UrlPatternRequestMatcher($match);
-        } else if (!$match instanceof RequestMatcherInterface) {
-            throw new \InvalidArgumentException('Invalid argument $match. Expected string or RequestMatcherInterface.');
-        }
-        $this->filters->add($match, $filter);
+        $filter = $this->filters->create($filter);
+        $matcher = $this->matcherFactory->create($match);
+        $this->filters->add($matcher, $filter);
     }
 
     public function addFilter(RequestMatcherInterface $matcher, RequestFilterInterface $filter): void
@@ -213,24 +194,31 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         $this->requestParser->readRequest($tcpConnection)
             ->then(function (ServerRequestInterface $request) use ($tcpConnection) {
 
-                $this->onHttpRequest($request, $tcpConnection);
+                try {
+                    $this->onHttpRequest($request, $tcpConnection);
+                } catch (\Throwable $error) {
+                    $this->onHttpError($request, $tcpConnection, $error);
+                }
 
             }, function (\Throwable $throwable) use ($tcpConnection) {
 
-                $tcpConnection->end();
-                $this->emit('error', [$throwable]);
+                $this->onTcpError($tcpConnection, $throwable);
 
             })
             ->then(null, function (\Throwable $throwable) use ($tcpConnection) {
 
-                if ($throwable instanceof ResponseException) {
-                    $tcpConnection->write(str($throwable->getResponse()));
-                }
-
+                // error handling threw an error, give up and pass the error on
                 $tcpConnection->end();
                 $this->emit('error', [$throwable]);
 
             });
+    }
+
+
+    protected function onTcpError(ConnectionInterface $tcpConnection, \Throwable $error): void
+    {
+        $tcpConnection->end();
+        $this->emit('error', [$error]);
     }
 
 
@@ -261,19 +249,13 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     }
 
 
-    protected function createHandlerFactory(): HandlerFactory
+    protected function onHttpError(ServerRequestInterface $request, ConnectionInterface $tcpConnection, \Throwable $error): void
     {
-        return new HandlerFactory($this->serverParams);
-    }
-
-    protected function createNegotiator(): WebsocketNegotiator
-    {
-        return new WebsocketNegotiator($this->serverParams);
-    }
-
-    protected function createRequestParser(): RequestParserInterface
-    {
-        return new RequestParser($this->serverParams);
+        if ($error instanceof ResponseException) {
+            $tcpConnection->write(str($error->getResponse()));
+        }
+        $tcpConnection->end();
+        $this->emit('error', [$error]);
     }
 
 
@@ -315,6 +297,17 @@ class WebSocketServer extends EventEmitter implements ServerInterface
             }
             return new TcpServer($uri, $loop, $tcp_context);
         }
+    }
+
+
+    protected function addTcpListeners(ServerInterface $tcpServer): void
+    {
+        $tcpServer->on('connection', function (ConnectionInterface $tcpConnection) {
+            $this->onTcpConnection($tcpConnection);
+        });
+        $tcpServer->on('error', function (\Throwable $error) {
+            $this->emit('error', [$error]);
+        });
     }
 
 

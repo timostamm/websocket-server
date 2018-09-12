@@ -23,7 +23,7 @@ class FilterCollectionTest extends TestCase
 
     protected function setUp()
     {
-        $this->subject = new FilterCollection();
+        $this->subject = new FilterCollection([]);
     }
 
 

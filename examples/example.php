@@ -17,13 +17,15 @@ $loop = Factory::create();
 
 
 $server = new WebSocketServer($loop, [
-    'uri' => '127.0.0.1:23080',
-    'on_error' => function (Throwable $error) {
-        // This error handler will be called when an exception was thrown
-        // by a filter, a controller method or the underlying tcp server.
-        print 'Server error: ' . $error->getMessage() . PHP_EOL;
-    }
+    'uri' => '127.0.0.1:23080'
 ]);
+
+
+$server->on('error', function (Throwable $error) {
+    // This error handler will be called when an exception was thrown
+    // by a filter, a controller method or the underlying tcp server.
+    print 'Server error: ' . $error->getMessage() . PHP_EOL;
+});
 
 
 // This filter responds with a HTTP 403
@@ -87,12 +89,6 @@ $server->route([
     }
     // on_open, on_close, on_error are available too
 ]);
-
-
-// Alternative to the "on_error" option
-// $server->on('error', function(Throwable $error){
-//     print 'Server error: ' . $error->getMessage() . PHP_EOL;
-// });
 
 
 $loop->run();
