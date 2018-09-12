@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript">
+
+
+
+        var token_alice = encodeURIComponent(btoa('Alice'));
+
+        var alice_at_alice_only = new WebSocket(
+            "ws://127.0.0.1:23080/restricted/alice-only",
+            ['auth-token', 'auth-token-'+token_alice]
+        );
+        alice_at_alice_only.onmessage = function (event) {
+            console.log("alice message:", event.data);
+        };
+        alice_at_alice_only.onerror = function (event) {
+            console.error("alice error", event);
+        };
+
+
+
+        var ws_alice_at_restricted = new WebSocket(
+            "ws://127.0.0.1:23080/restricted/something",
+            ['auth-token', 'auth-token-'+token_alice]
+        );
+        ws_alice_at_restricted.onmessage = function (event) {
+            console.log("alice message:", event.data);
+        };
+        ws_alice_at_restricted.onerror = function (event) {
+            console.error("alice error", event);
+        };
+
+
+
+        var ws_alice_at_public = new WebSocket(
+            "ws://127.0.0.1:23080/public",
+            ['auth-token', 'auth-token-'+token_alice]
+        );
+        ws_alice_at_public.onmessage = function (event) {
+            console.log("alice message:", event.data);
+        };
+        ws_alice_at_public.onerror = function (event) {
+            console.error("alice error", event);
+        };
+
+
+
+        var token_peter = encodeURIComponent(btoa('Peter'));
+
+        var peter_at_restricted = new WebSocket(
+            "ws://127.0.0.1:23080/restricted/something",
+            ['auth-token', 'auth-token-'+token_peter]
+        );
+        peter_at_restricted.onmessage = function (event) {
+            console.log("peter message:", event.data);
+        };
+        peter_at_restricted.onerror = function (event) {
+            console.error("peter error", event);
+        };
+
+
+
+        var peter_at_alice_only = new WebSocket(
+            "ws://127.0.0.1:23080/restricted/alice-only",
+            ['auth-token', 'auth-token-'+token_peter]
+        );
+        peter_at_alice_only.onmessage = function (event) {
+            console.log("peter message:", event.data);
+        };
+        peter_at_alice_only.onerror = function (event) {
+            console.error("peter error", event);
+        };
+
+
+
+        var anon_at_restricted = new WebSocket(
+            "ws://127.0.0.1:23080/restricted/something",
+            ['auth-token']
+        );
+        anon_at_restricted.onmessage = function (event) {
+            console.log("anon message:", event.data);
+        };
+        anon_at_restricted.onerror = function (event) {
+            console.error("anon error", event);
+        };
+
+
+
+        var anon_at_public = new WebSocket(
+            "ws://127.0.0.1:23080/public",
+            ['auth-token']
+        );
+        anon_at_public.onmessage = function (event) {
+            console.log("anon message:", event.data);
+        };
+        anon_at_public.onerror = function (event) {
+            console.error("anon error", event);
+        };
+
+
+
+
+    </script>
+<body>
+
+</body>

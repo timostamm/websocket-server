@@ -51,6 +51,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         'uri' => 'tcp://127.0.0.1:8080',
         'X-Powered-By' => 'ratchet/rfc6455',
         'strict_sub_protocol_check' => true,
+        'sub_protocols' => [],
         'shutdown_signals' => []
     ];
 

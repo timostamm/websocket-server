@@ -12,7 +12,6 @@ namespace TS\WebSockets\Routing;
 use Psr\Http\Message\ServerRequestInterface;
 use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\Http\MatcherFactory;
-use TS\WebSockets\Http\RequestMatcherInterface;
 
 
 class RouteCollection
@@ -59,9 +58,11 @@ class RouteCollection
             throw new \InvalidArgumentException($msg, 0, $exception);
         }
 
-        $protocols = $options['protocols'] ?? [];
-        if (!is_array($protocols)) {
-            $msg = sprintf('Option "protocols" must be a pattern (compatible with fnmatch()) or an implementation of %s.', RequestMatcherInterface::class);
+        $protocols = $options['sub_protocols'] ?? null;
+        if (is_null($protocols)) {
+            $protocols = $this->serverParams['sub_protocols'] ?? [];
+        } else if (!is_array($protocols)) {
+            $msg = sprintf('Option "sub_protocols" must be an array or null. Null inherits "sub_protocols" from server parameters.');
             throw new \InvalidArgumentException($msg);
         }
 

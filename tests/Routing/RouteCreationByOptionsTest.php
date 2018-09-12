@@ -80,7 +80,7 @@ class RouteCreationByOptionsTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->routes->create([
             'controller' => $ctrl,
-            'protocols' => 'str'
+            'sub_protocols' => 'str'
         ]);
     }
 
@@ -88,7 +88,7 @@ class RouteCreationByOptionsTest extends TestCase
     {
         $ctrl = $this->createMock(ControllerInterface::class);
         $route = $this->routes->create([
-            'protocols' => ['abc', 'xyz'],
+            'sub_protocols' => ['abc', 'xyz'],
             'controller' => $ctrl
         ]);
         $this->assertCount(2, $route->getSupportedSubProtocols());

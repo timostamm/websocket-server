@@ -135,18 +135,14 @@ $server->route([
 This library does not provide session integration, but provides support for 
 bearer token authentication.  
 
-Extend `AbstractTokenAuthenticator` with your token verification code and 
-optionally use `AuthorizationFilter` as a base for granular acces control.
+Extend `AbstractTokenAuthenticator` with your token verification code and
+return a user object. The user will be be available in the request attribute
+"user". If no token is present, the user attribute will be empty.
+ 
+Use `AuthorizationFilter` to check whether a user is present. Supply a 
+$checkUser function to check whether the user is authorized. 
 
-```php
-// The authenticator should check if the user is known and valid
-$server->filter('*', new MyTokenAuthenticator($secret));
-
-// authorizations filters check if the user is allowed to do something
-$server->filter('/delicate', new AuthorizationFilter(function($user){
-    return $user->hasRole('admin');
-}));
-```
+See examples/token-auth.php
 
 
 

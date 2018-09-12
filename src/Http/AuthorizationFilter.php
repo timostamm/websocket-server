@@ -12,14 +12,30 @@ namespace TS\WebSockets\Http;
 use Psr\Http\Message\ServerRequestInterface;
 
 
+/**
+ *
+ * By default, this filter simply checks if the
+ * request attribute "user" has a value.
+ *
+ * If "user" is not present, a HTTP 401 Unauthorized
+ * is thrown.
+ *
+ * If the $checkUser argument is provided, the
+ * function is called with the "user" value as an
+ * argument.
+ *
+ * If $checkUser returns false, a HTTP 403 Forbidden
+ * is thrown. Otherwise, the request passes on.
+ *
+ */
 class AuthorizationFilter implements RequestFilterInterface
 {
 
-    private $isAuthorized;
+    private $checkUser;
 
-    public function __construct(callable $isAuthorized = null)
+    public function __construct(callable $checkUser = null)
     {
-        $this->isAuthorized = $isAuthorized;
+        $this->checkUser = $checkUser;
     }
 
     public function apply(ServerRequestInterface $request): ServerRequestInterface
@@ -37,8 +53,11 @@ class AuthorizationFilter implements RequestFilterInterface
 
     protected function isAuthorized($user): bool
     {
-        $fn = $this->isAuthorized;
-        return $fn ? $fn($user) : false;
+        $fn = $this->checkUser;
+        if (is_null($fn)) {
+            return true;
+        }
+        return $fn($user);
     }
 
 
