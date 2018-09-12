@@ -50,6 +50,13 @@ abstract class ControllerDelegation
     }
 
 
+    /**
+     * Will be called before any other method and before the first socket
+     * is added to the controller connections.
+     *
+     * Will only be called once.
+     *
+     */
     public function onInit(): void
     {
     }

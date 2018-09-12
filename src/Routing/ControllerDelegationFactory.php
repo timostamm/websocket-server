@@ -48,14 +48,16 @@ class ControllerDelegationFactory
         $connections = $this->getConnectionsByCtrl($controller);
 
         /** @var ControllerDelegation[] $delegations */
-        $delegations = $this->getDelegationsByCtrl($controller);
+        $delegations = $this->getDelegationsByCtrl($controller, $initial);
+
+        if ($initial) {
+            foreach ($delegations as $delegation) {
+                /** @var ControllerDelegation $delegation */
+                $delegation->onInit();
+            }
+        }
 
         $connections->attach($webSocket);
-
-        foreach ($delegations as $delegation) {
-            /** @var ControllerDelegation $delegation */
-            $delegation->onInit();
-        }
 
         foreach ($delegations as $delegation) {
             /** @var ControllerDelegation $delegation */
@@ -93,9 +95,12 @@ class ControllerDelegationFactory
     }
 
 
-    protected function getDelegationsByCtrl(ControllerInterface $controller): \SplObjectStorage
+    protected function getDelegationsByCtrl(ControllerInterface $controller, ?bool &$initial): \SplObjectStorage
     {
-        if (!$this->delByCtrl->contains($controller)) {
+        if ($this->delByCtrl->contains($controller)) {
+            $initial = false;
+        } else {
+            $initial = true;
             $errorHandler = function (\Throwable $error) use ($controller) {
                 $wrapped = ControllerException::controller($controller, $error);
                 $fn = $this->serverErrorHandler;
