@@ -32,9 +32,6 @@ class RequestParser
     /** @var array */
     protected $serverParams;
 
-    /** @var \SplObjectStorage */
-    protected $promiseByTcp;
-
 
     public function __construct(array $serverParams)
     {
