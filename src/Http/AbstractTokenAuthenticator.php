@@ -17,8 +17,7 @@ use Psr\Http\Message\ServerRequestInterface;
  * The websocket spec does not allow to set custom headers
  * like an authorization header with an access token.
  *
- * Cookies are available, but if you need tokens, you
- * can pass them to the server as a subprototol:
+ * As a workaround, tokens can be provided as a subprotocol:
  *
  * JS:
  *
@@ -29,20 +28,13 @@ use Psr\Http\Message\ServerRequestInterface;
  * On the server:
  *
  * $server->route([
- *   'sub_protocols' => ['auth-token'']
+ *   'sub_protocols' => ['auth-token']
  * ]);
- *
- * class MyTokenAuth extends AbstractTokenAuthenticator {
- *  protected function decodeToken(string $token) {
- *      // decode token and return an object representing a user
- *      // return null for a 401 response or throw your own ResponseException
- *   }
- * }
  *
  * $server->filter('*', new MyTokenAuth('auth-token-'));
  *
- * Now the requests have a "user" attribute.
- *
+ * This class looks for a subprotocol with a specific prefix,
+ * and takes the remainder as a token.
  *
  */
 abstract class AbstractTokenAuthenticator implements RequestFilterInterface
