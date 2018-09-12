@@ -14,7 +14,6 @@ use PHPUnit\Framework\TestCase;
 use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\Http\MatcherFactory;
 use TS\WebSockets\Http\RequestMatcherInterface;
-use TS\WebSockets\WebSocket;
 
 
 class RouteCreationByOptionsTest extends TestCase
@@ -128,51 +127,5 @@ class RouteCreationByOptionsTest extends TestCase
             'controller' => 123
         ]);
     }
-
-    public function testControllerAndOnX()
-    {
-        $ctrl = $this->createMock(ControllerInterface::class);
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('You cannot provide option');
-        $this->routes->create([
-            'controller' => $ctrl,
-            'on_open' => function () {
-            }
-        ]);
-    }
-
-
-    public function testOnX()
-    {
-        $calls = [];
-        $route = $this->routes->create([
-            'on_open' => function () use (&$calls) {
-                $calls[] = 'on_open';
-            },
-            'on_close' => function () use (&$calls) {
-                $calls[] = 'on_close';
-            },
-            'on_message' => function () use (&$calls) {
-                $calls[] = 'on_message';
-            },
-            'on_error' => function () use (&$calls) {
-                $calls[] = 'on_error';
-            }
-        ]);
-
-        $ctrl = $route->getController();
-
-        /** @var WebSocket $ws */
-        $ws = $this->createMock(WebSocket::class);
-
-        $ctrl->onOpen($ws);
-        $ctrl->onClose($ws);
-        $ctrl->onMessage($ws, 'xx', false);
-        $ctrl->onError($ws, new \Exception());
-
-        $this->assertSame(['on_open', 'on_close', 'on_message', 'on_error'], $calls);
-
-    }
-
 
 }
