@@ -78,4 +78,13 @@ class TcpConnections
         return $this->shuttingDown->promise();
     }
 
+
+    public function stats(): array
+    {
+        return [
+            'tcp connections' => $this->connections->count()
+        ];
+    }
+
+
 }

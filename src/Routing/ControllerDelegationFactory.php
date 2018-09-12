@@ -115,6 +115,19 @@ class ControllerDelegationFactory
     }
 
 
+    public function stats(): array
+    {
+        $a = [
+            'controller instances' => count($this->getControllers())
+        ];
+        foreach ($this->getControllers() as $controller) {
+            $k = 'controller ' . get_class($controller);
+            $a[$k] = $this->getConnectionsByCtrl($controller)->count() . ' clients';
+        }
+        return $a;
+    }
+
+
     /**
      * @return ControllerInterface[]
      */

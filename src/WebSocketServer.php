@@ -244,6 +244,14 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     }
 
 
+    public function stats(): array
+    {
+        return $this->tcpConnections->stats()
+            + $this->webSocketHandlers->stats()
+            + $this->controllerDelegations->stats();
+    }
+
+
     protected function onTcpConnection(ConnectionInterface $tcpConnection): void
     {
         $this->requestParser->readRequest($tcpConnection)

@@ -126,4 +126,14 @@ class WebSocketHandlerFactory
         return $this->shuttingDown->promise();
     }
 
+
+    public function stats(): array
+    {
+        return [
+            'web socket connections' => $this->handlerByTcp->count()
+        ];
+    }
+
+
+
 }
