@@ -10,6 +10,7 @@ A simple nonblocking server dedicated to websockets.
 - works well with apache >= 2.4
 - installable via `composer require timostamm/websocket-server`
 - minimal dependencies ([react/socket](https://packagist.org/packages/react/socket), [ratchet/rfc6455](https://packagist.org/packages/ratchet/rfc6455), [guzzlehttp/psr7](https://packagist.org/packages/guzzlehttp/psr7))
+- graceful shutdown via signals (or manually) 
 
 Credits for the websocket protocol implementation go to [ratchet/rfc6455](https://github.com/ratchetphp/RFC6455).
 
@@ -176,7 +177,7 @@ You can implement one or more of the following interfaces to get access to the l
 clients connected to this controller, etc.
 
 ```php
-class MyCtrl implements ControllerInterface, ServerParamsAwareInterface, LoopAwareInterface, ConnectionListAwareInterface, OnLastCloseInterface, OnFirstOpenInterface
+class MyCtrl implements ControllerInterface, ServerParamsAwareInterface, LoopAwareInterface ConnectionListAwareInterface, OnShutDownInterface, OnLastCloseInterface, OnFirstOpenInterface
 {
     function setServerParams(array $serverParams): void
     {
@@ -191,6 +192,12 @@ class MyCtrl implements ControllerInterface, ServerParamsAwareInterface, LoopAwa
     function setConnections(\SplObjectStorage $webSockets): void
     {
         print 'Got connection list.' . PHP_EOL;
+    }
+    
+    function onShutDown(): PromiseInterface
+    {
+         // Will be called when the server is asked to shutdown.
+         // Use this hook to finish important tasks, then resolve the promise.
     }
 
     function onLastClose(WebSocket $socket): void

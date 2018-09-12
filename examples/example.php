@@ -55,6 +55,7 @@ $server->route([
     },
     'controller' => new class() implements ControllerInterface
     {
+
         function onOpen(WebSocket $socket): void
         {
             print $socket . ' connected. Sending a "Hello".' . PHP_EOL;
@@ -77,17 +78,6 @@ $server->route([
         }
 
     }
-]);
-
-
-// Alternative route definition, controller will be created for you
-$server->route([
-    'match' => '/other/*',
-    'protocols' => ['my-proto'],
-    'on_message' => function (WebSocket $from, string $payload, bool $binary): void {
-        print 'Message from ' . $from->getRemoteAddress() . ": " . $payload . PHP_EOL;
-    }
-    // on_open, on_close, on_error are available too
 ]);
 
 

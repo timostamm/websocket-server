@@ -12,22 +12,26 @@ namespace TS\WebSockets;
 use Evenement\EventEmitter;
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\LoopInterface;
+use React\Promise\Deferred;
+use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
 use React\Socket\TcpServer;
-use TS\WebSockets\Routing\ControllerDelegationFactory;
 use TS\WebSockets\Http\FilterCollection;
 use TS\WebSockets\Http\MatcherFactory;
 use TS\WebSockets\Http\RequestFilterInterface;
 use TS\WebSockets\Http\RequestMatcherInterface;
 use TS\WebSockets\Http\RequestParser;
-use TS\WebSockets\Http\RequestParserInterface;
 use TS\WebSockets\Http\ResponseException;
+use TS\WebSockets\Protocol\TcpConnnections;
 use TS\WebSockets\Protocol\WebSocketHandlerFactory;
 use TS\WebSockets\Protocol\WebSocketNegotiator;
+use TS\WebSockets\Routing\ControllerDelegationFactory;
 use TS\WebSockets\Routing\Route;
 use TS\WebSockets\Routing\RouteCollection;
 use function GuzzleHttp\Psr7\str;
+use function React\Promise\all;
+use function React\Promise\resolve;
 
 
 /**
@@ -46,13 +50,17 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         'request_header_max_size' => 1024 * 16,
         'uri' => 'tcp://127.0.0.1:8080',
         'X-Powered-By' => 'ratchet/rfc6455',
-        'strict_sub_protocol_check' => true
+        'strict_sub_protocol_check' => true,
+        'shutdown_signals' => []
     ];
+
+    /** @var LoopInterface */
+    protected $loop;
 
     /** @var array */
     protected $serverParams;
 
-    /** @var RequestParserInterface */
+    /** @var RequestParser */
     protected $requestParser;
 
     /** @var MatcherFactory */
@@ -68,13 +76,19 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     protected $negotiator;
 
     /** @var WebSocketHandlerFactory */
-    protected $handlerFactory;
+    protected $webSocketHandlers;
 
     /** @var ControllerDelegationFactory */
     protected $controllerDelegations;
 
     /** @var TcpServer */
     protected $tcpServer;
+
+    /** @var TcpConnnections */
+    protected $tcpConnections;
+
+    /** @var Deferred */
+    private $shuttingDown;
 
 
     /**
@@ -105,20 +119,25 @@ class WebSocketServer extends EventEmitter implements ServerInterface
      */
     public function __construct(LoopInterface $loop, array $serverParams = [])
     {
+        $this->loop = $loop;
         $this->serverParams = array_replace([], self::DEFAULT_SERVER_PARAMS, $serverParams, [
             'loop' => $loop
         ]);
+        $onError = function (\Throwable $error) {
+            $this->emit('error', [$error]);
+        };
         $this->requestParser = new RequestParser($this->serverParams);
         $this->matcherFactory = new MatcherFactory($this->serverParams);
         $this->filters = new FilterCollection($this->serverParams);
         $this->routes = new RouteCollection($this->serverParams, $this->matcherFactory);
         $this->negotiator = new WebSocketNegotiator($this->serverParams);
-        $this->handlerFactory = new WebSocketHandlerFactory($this->serverParams);
-        $this->controllerDelegations = new ControllerDelegationFactory($this->serverParams, function (\Throwable $error) {
-            $this->emit('error', [$error]);
-        });
+        $this->webSocketHandlers = new WebSocketHandlerFactory($this->serverParams);
+        $this->controllerDelegations = new ControllerDelegationFactory($this->serverParams, $onError);
         $this->tcpServer = $this->createTcpServer($loop);
-        $this->addTcpListeners($this->tcpServer);
+        $this->tcpConnections = new TcpConnnections($this->tcpServer, function (ConnectionInterface $connection) {
+            $this->onTcpConnection($connection);
+        }, $onError);
+        $this->addShutdownSignals($this->serverParams);
     }
 
 
@@ -144,13 +163,6 @@ class WebSocketServer extends EventEmitter implements ServerInterface
      *
      * The name of a class implementing ControllerInterface without
      * constructor arguments or an instance of a ControllerInterface.
-     *
-     *
-     * "on_open", "on_close", "on_message", "on_error" callable
-     *
-     * Alternative to the "controller" option, you can provide
-     * callbacks and an anonymous controller will be created for
-     * you.
      *
      *
      * "filter" RequestFilterInterface | RequestFilterInterface[]
@@ -197,14 +209,38 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     }
 
 
-    protected function addTcpListeners(ServerInterface $tcpServer): void
+    public function shutDown(float $timeout = 10.0, bool $stopLoop = true): PromiseInterface
     {
-        $tcpServer->on('connection', function (ConnectionInterface $tcpConnection) {
-            $this->onTcpConnection($tcpConnection);
+        $this->shuttingDown = new Deferred();
+
+        $this->loop->addTimer($timeout, function () {
+            $this->emit('error', [new \RuntimeException('Shutdown timeout - shutting down NOW')]);
+            $this->shuttingDown->resolve();
         });
-        $tcpServer->on('error', function (\Throwable $error) {
-            $this->emit('error', [$error]);
+
+        all([
+            // stop accepting new connections and wait for current to close
+            $this->tcpConnections->shutDown(),
+
+            // shutdown controllers
+            resolve($this->controllerDelegations->shutDown())->always(function () {
+
+                // then gracefully close web socket connections
+                $this->webSocketHandlers->shutDown();
+            }),
+
+        ])->always(function () {
+            $this->shuttingDown->resolve();
         });
+
+        return $this->shuttingDown
+            ->promise()
+            ->always(function () use ($stopLoop) {
+                $this->tcpServer->close();
+                if ($stopLoop) {
+                    $this->loop->stop();
+                }
+            });
     }
 
 
@@ -219,9 +255,10 @@ class WebSocketServer extends EventEmitter implements ServerInterface
                     $this->onHttpError($request, $tcpConnection, $error);
                 }
 
-            }, function (\Throwable $throwable) use ($tcpConnection) {
+            }, function (\Throwable $error) use ($tcpConnection) {
 
-                $this->onTcpError($tcpConnection, $throwable);
+                $tcpConnection->end();
+                $this->emit('error', [$error]);
 
             })
             ->then(null, function (\Throwable $throwable) use ($tcpConnection) {
@@ -234,15 +271,12 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     }
 
 
-    protected function onTcpError(ConnectionInterface $tcpConnection, \Throwable $error): void
-    {
-        $tcpConnection->end();
-        $this->emit('error', [$error]);
-    }
-
-
     protected function onHttpRequest(ServerRequestInterface $request, ConnectionInterface $tcpConnection): void
     {
+        if ($this->shuttingDown) {
+            throw ResponseException::create(503, null, 'shutdown');
+        }
+
         $request = $this->filters->apply($request);
         $route = $this->routes->match($request);
 
@@ -258,7 +292,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
 
         $tcpConnection->write(str($response));
 
-        $handler = $this->handlerFactory->create($request, $tcpConnection);
+        $handler = $this->webSocketHandlers->add($request, $tcpConnection);
 
         $this->controllerDelegations->add($route->getController(), $handler->getWebSocket());
     }
@@ -312,6 +346,25 @@ class WebSocketServer extends EventEmitter implements ServerInterface
             }
             return new TcpServer($uri, $loop, $tcp_context);
         }
+    }
+
+
+    protected function addShutdownSignals(array $serverParams): void
+    {
+        $signals = $serverParams['shutdown_signals'] ?? [];
+        if (empty($signals)) {
+            return;
+        }
+        foreach ($signals as $signal) {
+            $this->loop->addSignal($signal, $func = function ($signal) use (&$func) {
+
+                echo 'Signal: ', (string)$signal, PHP_EOL;
+
+                $this->loop->removeSignal($signal, $func);
+                $this->shutDown();
+            });
+        }
+
     }
 
 

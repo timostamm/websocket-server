@@ -9,8 +9,10 @@
 namespace TS\WebSockets\Routing;
 
 
+use React\Promise\PromiseInterface;
 use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\WebSocket;
+use function React\Promise\all;
 
 
 class ControllerDelegationFactory
@@ -34,6 +36,10 @@ class ControllerDelegationFactory
     protected $wsByCtrl;
 
 
+    /** @var bool */
+    private $shuttingDown = false;
+
+
     public function __construct(array $serverParams, callable $serverErrorHandler)
     {
         $this->serverParams = $serverParams;
@@ -45,6 +51,10 @@ class ControllerDelegationFactory
 
     public function add(ControllerInterface $controller, WebSocket $webSocket): void
     {
+        if ($this->shuttingDown || $webSocket->isClosed()) {
+            return;
+        }
+
         $connections = $this->getConnectionsByCtrl($controller);
 
         /** @var ControllerDelegation[] $delegations */
@@ -86,6 +96,38 @@ class ControllerDelegationFactory
     }
 
 
+    /**
+     * Shutdown all controllers.
+     *
+     * @return PromiseInterface
+     */
+    public function shutDown(): PromiseInterface
+    {
+        $this->shuttingDown = true;
+        $ps = [];
+        foreach ($this->delByCtrl as $controller) {
+            foreach ($this->delByCtrl[$controller] as $delegation) {
+                /** @var ControllerDelegation $delegation */
+                $ps[] = $delegation->onShutdown();
+            }
+        }
+        return all($ps);
+    }
+
+
+    /**
+     * @return ControllerInterface[]
+     */
+    protected function getControllers(): array
+    {
+        $controllers = [];
+        foreach ($this->wsByCtrl as $item) {
+            $controllers[] = $item;
+        }
+        return $controllers;
+    }
+
+
     protected function getConnectionsByCtrl(ControllerInterface $controller): \SplObjectStorage
     {
         if (!$this->wsByCtrl->contains($controller)) {
@@ -124,6 +166,10 @@ class ControllerDelegationFactory
     protected function createDelegations(ControllerInterface $controller, callable $errorHandler): array
     {
         $a = [];
+
+        if ($controller instanceof OnShutDownInterface) {
+            $a[] = new OnShutDownDelegation($this->serverParams, $controller, $this->getConnectionsByCtrl($controller), $errorHandler);
+        }
 
         if ($controller instanceof ServerParamsAwareInterface) {
             $a[] = new ServerParamsAwareDelegation($this->serverParams, $controller, $this->getConnectionsByCtrl($controller), $errorHandler);

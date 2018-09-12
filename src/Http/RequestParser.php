@@ -19,14 +19,21 @@ use function GuzzleHttp\Psr7\parse_request;
 use function GuzzleHttp\Psr7\str;
 
 
-class RequestParser implements RequestParserInterface
+class RequestParser
 {
 
     public const REQ_ATTR_TCP_CONNECTION = 'tcp_connection';
 
     protected const HTTP_HEADER_END = "\r\n\r\n";
+
+    /** @var int */
     protected $maxHeaderSize;
+
+    /** @var array */
     protected $serverParams;
+
+    /** @var \SplObjectStorage */
+    protected $promiseByTcp;
 
 
     public function __construct(array $serverParams)
@@ -41,6 +48,10 @@ class RequestParser implements RequestParserInterface
     }
 
 
+    /**
+     * @param ConnectionInterface $conn
+     * @return PromiseInterface <\Psr\Http\Message\ServerRequestInterface, \Throwable>
+     */
     public function readRequest(ConnectionInterface $conn): PromiseInterface
     {
         $out = new Deferred();

@@ -9,8 +9,10 @@
 namespace TS\WebSockets\Routing;
 
 
+use React\Promise\PromiseInterface;
 use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\WebSocket;
+use function React\Promise\resolve;
 
 
 abstract class ControllerDelegation
@@ -59,6 +61,19 @@ abstract class ControllerDelegation
      */
     public function onInit(): void
     {
+    }
+
+
+    /**
+     * Will be called when the server is asked to shutdown.
+     *
+     * Use this hook to finish important tasks, then resolve the promise.
+     *
+     * @return PromiseInterface
+     */
+    public function onShutdown(): PromiseInterface
+    {
+        return resolve();
     }
 
 

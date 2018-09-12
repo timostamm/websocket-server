@@ -56,8 +56,8 @@ class WebSocketHandler
         $this->tcpConnection = $tcpConnection;
         $tcpConnection->on('data', [$this, 'onTcpData']);
         $tcpConnection->on('error', [$this, 'onTcpError']);
-        $tcpConnection->once('close', [$this, 'onTcpClose']);
         $tcpConnection->once('end', [$this, 'onTcpEnd']);
+        $tcpConnection->once('close', [$this, 'onTcpClose']);
 
         $this->buffer = new MessageBuffer(
             $closeFrameChecker,
@@ -100,7 +100,21 @@ class WebSocketHandler
     }
 
 
-    public function startClose(int $code): void
+    /**
+     *
+     * We initiate the closing handshake by sending a
+     * close frame.
+     *
+     * Now we should wait until the client acknowledges
+     * the by sending the same close code back.
+     *
+     * Then we must close the TCP connection.
+     *
+     *
+     * @param int $code
+     * @param string $reason
+     */
+    public function startClose(int $code, string $reason = ''): void
     {
         if ($this->closed) {
             throw new \BadMethodCallException('Already closed.');
@@ -111,9 +125,25 @@ class WebSocketHandler
 
         $this->closing = true;
 
-        $frame = $this->buffer->newCloseFrame($code);
+        $frame = $this->buffer->newCloseFrame($code, $reason);
         $this->tcpConnection->write($frame->getContents());
 
+        $this->webSocket->emit('close');
+    }
+
+
+    /**
+     *
+     * We have to acknowledge the close by sending the same close
+     * code back to the client.
+     * The client will then close the TCP connection.
+     *
+     * @param FrameInterface $frame
+     */
+    protected function ackClose(FrameInterface $frame): void
+    {
+        $this->closing = true;
+        $this->tcpConnection->end($frame->getContents());
         $this->webSocket->emit('close');
     }
 
@@ -149,10 +179,12 @@ class WebSocketHandler
 
     public function onTcpError(\Throwable $throwable): void
     {
-        if (! $this->closed && ! $this->closing) {
+        if (!$this->closed && !$this->closing) {
             $this->webSocket->emit('error', [$throwable]);
             $this->webSocket->emit('close');
         }
+        // should we close tcp or not?
+        //$this->tcpConnection->close();
         $this->setClosed();
     }
 
@@ -160,7 +192,7 @@ class WebSocketHandler
     public function onTcpEnd(): void
     {
         if (!$this->closed && !$this->closing) {
-            $this->webSocket->emit(new \RuntimeException('TCP connection ended without close.'));
+            $this->webSocket->emit('error', [new \RuntimeException('TCP connection ended without close.')]);
             $this->webSocket->emit('close');
         }
         $this->setClosed();
@@ -170,7 +202,7 @@ class WebSocketHandler
     public function onTcpClose(): void
     {
         if (!$this->closed && !$this->closing) {
-            $this->webSocket->emit(new \RuntimeException('TCP connection closed without close.'));
+            $this->webSocket->emit('error', [new \RuntimeException('TCP connection closed without close.')]);
             $this->webSocket->emit('close');
         }
         $this->setClosed();
@@ -195,11 +227,41 @@ class WebSocketHandler
 
             case Frame::OP_CLOSE:
 
-                // The ratchet MessageBuffer has already processed the close!
+                // The ratchet MessageBuffer may have created this
+                // close frame in response to invalid data received
+                // from the client.
+                //
+                // So the close frame may be either
+                // 1) start of a closing handshake initiated by the client
+                // 2) the acknowledgment of a closing handshake initiated by us
+                // 3) invalid data received from the client
 
-                $this->closing = true;
-                $this->tcpConnection->end($frame->getContents());
-                $this->webSocket->emit('close');
+                list($code, $reason) = $this->decodeCloseFrame($frame->getPayload());
+
+                if (strpos($reason, 'Ratchet detected') === 0) {
+
+                    // case 3)
+                    $this->startClose($code, $reason);
+
+                    if ($this->closing) {
+                        $this->tcpConnection->end();
+                    }
+
+                } else if ($this->closing) {
+
+                    // case 2)
+                    $this->tcpConnection->end();
+
+                } else {
+
+                    // case 1)
+                    // We have to acknowledge the close by sending the same close
+                    // code back to the client.
+                    // According to the autobahn test suite, it is our responsibility
+                    // to close the TCP connection.
+                    $this->ackClose($frame);
+
+                }
 
                 break;
 
@@ -218,6 +280,14 @@ class WebSocketHandler
 
                 break;
         }
+    }
+
+
+    protected function decodeCloseFrame(string $payload): array
+    {
+        list($code) = array_merge(unpack('n*', substr($payload, 0, 2)));
+        $reason = substr($payload, 2);
+        return [$code, $reason];
     }
 
 
