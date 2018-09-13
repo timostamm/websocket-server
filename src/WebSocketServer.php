@@ -135,9 +135,10 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         $this->webSocketHandlers = new WebSocketHandlerFactory($this->serverParams);
         $this->controllerDelegations = new ControllerDelegationFactory($this->serverParams, $onError);
         $this->tcpServer = $this->createTcpServer($loop);
+        $this->tcpServer->on('error', $onError);
         $this->tcpConnections = new TcpConnections($this->tcpServer, function (ConnectionInterface $connection) {
             $this->onTcpConnection($connection);
-        }, $onError);
+        });
         $this->addShutdownSignals($this->serverParams);
     }
 
@@ -227,7 +228,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
             resolve($this->controllerDelegations->shutDown())->always(function () {
 
                 // then gracefully close web socket connections
-                $this->webSocketHandlers->shutDown();
+                return $this->webSocketHandlers->shutDown();
             }),
 
         ])->always(function () {
@@ -259,13 +260,19 @@ class WebSocketServer extends EventEmitter implements ServerInterface
             ->then(function (ServerRequestInterface $request) use ($tcpConnection) {
 
                 try {
+
                     $this->onHttpRequest($request, $tcpConnection);
-                } catch (\Throwable $error) {
-                    $this->onHttpError($request, $tcpConnection, $error);
+
+                } catch (ResponseException $error) {
+
+                    $tcpConnection->write(str($error->getResponse()));
+                    $tcpConnection->end();
+
                 }
 
             }, function (\Throwable $error) use ($tcpConnection) {
 
+                // error handling HTTP request
                 $tcpConnection->end();
                 $this->emit('error', [$error]);
 
@@ -304,16 +311,6 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         $handler = $this->webSocketHandlers->add($request, $tcpConnection);
 
         $this->controllerDelegations->add($route->getController(), $handler->getWebSocket());
-    }
-
-
-    protected function onHttpError(ServerRequestInterface $request, ConnectionInterface $tcpConnection, \Throwable $error): void
-    {
-        if ($error instanceof ResponseException) {
-            $tcpConnection->write(str($error->getResponse()));
-        }
-        $tcpConnection->end();
-        $this->emit('error', [$error]);
     }
 
 
@@ -366,9 +363,6 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         }
         foreach ($signals as $signal) {
             $this->loop->addSignal($signal, $func = function ($signal) use (&$func) {
-
-                echo 'Signal: ', (string)$signal, PHP_EOL;
-
                 $this->loop->removeSignal($signal, $func);
                 $this->shutDown();
             });

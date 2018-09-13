@@ -47,7 +47,7 @@ $server->filter('example/origin', new OriginFilter(['example.com']));
 // Add example route
 $server->route([
     'match' => '/example/*',
-    'protocols' => ['my-proto'],
+    'sub_protocols' => ['my-proto'],
     'filter' => function (ServerRequestInterface $request) {
         if ($request->getRequestTarget() === '/example/forbidden') {
             throw ResponseException::create(403);

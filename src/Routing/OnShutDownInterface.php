@@ -21,6 +21,8 @@ use React\Promise\PromiseInterface;
  * Your WebSocket connections will automatically be closed *after*
  * your shutdown is complete.
  *
+ * Note: shutdown will only be called if the controller was used.
+ *
  */
 interface OnShutDownInterface
 {

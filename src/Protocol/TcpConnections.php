@@ -31,18 +31,12 @@ class TcpConnections
     /** @var callable */
     private $onConnection;
 
-    /** @var callable */
-    private $onError;
 
-
-    public function __construct(ServerInterface $server, callable $onConnection, callable $onError)
+    public function __construct(ServerInterface $server, callable $onConnection)
     {
         $this->server = $server;
         $this->onConnection = $onConnection;
-        $this->onError = $onError;
         $this->connections = new \SplObjectStorage();
-        $server->on('error', $onError);
-        $server->on('connection', $onConnection);
         $server->on('connection', [$this, 'onOpen']);
     }
 
@@ -55,6 +49,9 @@ class TcpConnections
         });
         if ($this->shuttingDown) {
             $tcpConnection->close();
+        } else {
+            $fn = $this->onConnection;
+            $fn($tcpConnection);
         }
     }
 
