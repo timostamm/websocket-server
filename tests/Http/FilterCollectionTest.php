@@ -77,6 +77,8 @@ class FilterCollectionTest extends TestCase
 
         /** @var RequestFilterInterface | MockObject $filter */
         $filter = $this->getMockBuilder(RequestFilterInterface::class)->getMock();
+        $filter->expects($this->never())
+            ->method('apply');
         $this->subject->add($matcher, $filter);
 
         $request = new ServerRequest('GET', 'http://example.com');

@@ -23,6 +23,7 @@ use TS\WebSockets\Http\RequestFilterInterface;
 use TS\WebSockets\Http\RequestMatcherInterface;
 use TS\WebSockets\Http\RequestParser;
 use TS\WebSockets\Http\ResponseException;
+use TS\WebSockets\Http\RouteStarsFilters;
 use TS\WebSockets\Protocol\TcpConnections;
 use TS\WebSockets\Protocol\WebSocketHandlerFactory;
 use TS\WebSockets\Protocol\WebSocketNegotiator;
@@ -179,6 +180,11 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     {
         $route = $this->routes->create($options);
         $this->routes->add($route);
+
+        if (is_string($options['match'] ?? false)) {
+            $this->addFilter($route->getRequestMatcher(), new RouteStarsFilters($options['match']));
+        }
+
         $filter = $options['filter'] ?? [];
         foreach (is_array($filter) ? $filter : [$filter] as $item) {
             $this->filter($route->getRequestMatcher(), $item);

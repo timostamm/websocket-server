@@ -9,6 +9,7 @@
 namespace TS\WebSockets\Http;
 
 
+use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 
@@ -21,11 +22,17 @@ use Psr\Http\Message\ServerRequestInterface;
  * is thrown.
  *
  * If the $checkUser argument is provided, the
- * function is called with the "user" value as an
- * argument.
+ * function is called with the "user" value and the
+ * request as arguments.
  *
  * If $checkUser returns false, a HTTP 403 Forbidden
  * is thrown. Otherwise, the request passes on.
+ *
+ * Example:
+ *
+ * $server->filter('*', new AuthorizationFilter(function($user, ServerRequestInterface $request){
+ *    return $user->getName() === 'peter';
+ * }))
  *
  */
 class AuthorizationFilter implements RequestFilterInterface
@@ -44,20 +51,20 @@ class AuthorizationFilter implements RequestFilterInterface
         if (!$user) {
             throw ResponseException::create(401);
         }
-        if (!$this->isAuthorized($user)) {
+        if (!$this->isAuthorized($user, $request)) {
             throw ResponseException::create(403);
         }
         return $request;
     }
 
 
-    protected function isAuthorized($user): bool
+    protected function isAuthorized($user, RequestInterface $request): bool
     {
         $fn = $this->checkUser;
         if (is_null($fn)) {
             return true;
         }
-        return $fn($user);
+        return $fn($user, $request);
     }
 
 
