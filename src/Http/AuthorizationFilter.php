@@ -9,7 +9,6 @@
 namespace TS\WebSockets\Http;
 
 
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 
@@ -58,7 +57,7 @@ class AuthorizationFilter implements RequestFilterInterface
     }
 
 
-    protected function isAuthorized($user, RequestInterface $request): bool
+    protected function isAuthorized($user, ServerRequestInterface $request): bool
     {
         $fn = $this->checkUser;
         if (is_null($fn)) {
