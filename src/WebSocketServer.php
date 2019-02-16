@@ -271,6 +271,8 @@ class WebSocketServer extends EventEmitter implements ServerInterface
 
                 } catch (ResponseException $error) {
 
+                    // TODO this is part of normal control flow, but we should log this somehow
+
                     $tcpConnection->write(str($error->getResponse()));
                     $tcpConnection->end();
 
