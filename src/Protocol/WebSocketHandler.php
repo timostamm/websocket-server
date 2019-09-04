@@ -9,6 +9,7 @@
 namespace TS\WebSockets\Protocol;
 
 
+use BadMethodCallException;
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Messaging\CloseFrameChecker;
 use Ratchet\RFC6455\Messaging\Frame;
@@ -16,6 +17,8 @@ use Ratchet\RFC6455\Messaging\FrameInterface;
 use Ratchet\RFC6455\Messaging\MessageBuffer;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use React\Socket\ConnectionInterface;
+use RuntimeException;
+use Throwable;
 use TS\WebSockets\WebSocket;
 
 
@@ -89,10 +92,10 @@ class WebSocketHandler
     public function send(string $payload, bool $binary): void
     {
         if ($this->closed) {
-            throw new \BadMethodCallException('Cannot send data, socket is closed.');
+            throw new BadMethodCallException('Cannot send data, socket is closed.');
         }
         if ($this->closing) {
-            throw new \BadMethodCallException('Cannot send data, socket is closing.');
+            throw new BadMethodCallException('Cannot send data, socket is closing.');
         }
         $op = $binary ? Frame::OP_BINARY : Frame::OP_TEXT;
         $frame = $this->buffer->newFrame($payload, true, $op);
@@ -117,10 +120,10 @@ class WebSocketHandler
     public function startClose(int $code, string $reason = ''): void
     {
         if ($this->closed) {
-            throw new \BadMethodCallException('Already closed.');
+            throw new BadMethodCallException('Already closed.');
         }
         if ($this->closing) {
-            throw new \BadMethodCallException('Already closing.');
+            throw new BadMethodCallException('Already closing.');
         }
 
         $this->closing = true;
@@ -177,7 +180,7 @@ class WebSocketHandler
     }
 
 
-    public function onTcpError(\Throwable $throwable): void
+    public function onTcpError(Throwable $throwable): void
     {
         if (!$this->closed && !$this->closing) {
             $this->webSocket->emit('error', [$throwable]);
@@ -192,7 +195,7 @@ class WebSocketHandler
     public function onTcpEnd(): void
     {
         if (!$this->closed && !$this->closing) {
-            $this->webSocket->emit('error', [new \RuntimeException('TCP connection ended without close.')]);
+            $this->webSocket->emit('error', [new RuntimeException('TCP connection ended without close.')]);
             $this->webSocket->emit('close');
         }
         $this->setClosed();
@@ -202,7 +205,7 @@ class WebSocketHandler
     public function onTcpClose(): void
     {
         if (!$this->closed && !$this->closing) {
-            $this->webSocket->emit('error', [new \RuntimeException('TCP connection closed without close.')]);
+            $this->webSocket->emit('error', [new RuntimeException('TCP connection closed without close.')]);
             $this->webSocket->emit('close');
         }
         $this->setClosed();

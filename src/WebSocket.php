@@ -9,6 +9,7 @@
 namespace TS\WebSockets;
 
 
+use BadMethodCallException;
 use Evenement\EventEmitter;
 use Psr\Http\Message\ServerRequestInterface;
 use Ratchet\RFC6455\Messaging\Frame;
@@ -41,7 +42,7 @@ class WebSocket extends EventEmitter
     /**
      * @param string $payload
      * @param bool $binary
-     * @throws \BadMethodCallException if the connection is closed or closing
+     * @throws BadMethodCallException if the connection is closed or closing
      */
     public function send(string $payload, bool $binary = false): void
     {
@@ -51,11 +52,11 @@ class WebSocket extends EventEmitter
 
     /**
      * @param int $code
-     * @throws \BadMethodCallException if the connection is already closed or closing
+     * @param string $reason
      */
-    public function close($code = Frame::CLOSE_NORMAL): void
+    public function close(int $code = Frame::CLOSE_NORMAL, string $reason=''): void
     {
-        $this->handler->startClose($code);
+        $this->handler->startClose($code, $reason);
     }
 
 

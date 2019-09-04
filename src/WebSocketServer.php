@@ -10,6 +10,7 @@ namespace TS\WebSockets;
 
 
 use Evenement\EventEmitter;
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
@@ -17,6 +18,8 @@ use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
 use React\Socket\TcpServer;
+use RuntimeException;
+use Throwable;
 use TS\WebSockets\Http\FilterCollection;
 use TS\WebSockets\Http\MatcherFactory;
 use TS\WebSockets\Http\RequestFilterInterface;
@@ -125,7 +128,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         $this->serverParams = array_replace([], self::DEFAULT_SERVER_PARAMS, $serverParams, [
             'loop' => $loop
         ]);
-        $onError = function (\Throwable $error) {
+        $onError = function (Throwable $error) {
             $this->emit('error', [$error]);
         };
         $this->requestParser = new RequestParser($this->serverParams);
@@ -222,7 +225,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         $this->shuttingDown = new Deferred();
 
         $this->loop->addTimer($timeout, function () {
-            $this->emit('error', [new \RuntimeException('Shutdown timeout - shutting down NOW')]);
+            $this->emit('error', [new RuntimeException('Shutdown timeout - shutting down NOW')]);
             $this->shuttingDown->resolve();
         });
 
@@ -278,14 +281,14 @@ class WebSocketServer extends EventEmitter implements ServerInterface
 
                 }
 
-            }, function (\Throwable $error) use ($tcpConnection) {
+            }, function (Throwable $error) use ($tcpConnection) {
 
                 // error handling HTTP request
                 $tcpConnection->end();
                 $this->emit('error', [$error]);
 
             })
-            ->then(null, function (\Throwable $throwable) use ($tcpConnection) {
+            ->then(null, function (Throwable $throwable) use ($tcpConnection) {
 
                 // error handling threw an error, give up and pass the error on
                 $tcpConnection->end();
@@ -330,17 +333,17 @@ class WebSocketServer extends EventEmitter implements ServerInterface
 
         if (is_null($tcp_server) && is_null($uri)) {
             $msg = sprintf('Cannot create tcp server. You have to provide one of the server parameters "uri" or "tcp_server".');
-            throw new \InvalidArgumentException($msg);
+            throw new InvalidArgumentException($msg);
         }
 
         if (!is_null($tcp_server) && !is_null($uri) && $uri !== self::DEFAULT_SERVER_PARAMS['uri']) {
             $msg = sprintf('You cannot provide both server parameters "uri" and "tcp_server".');
-            throw new \InvalidArgumentException($msg);
+            throw new InvalidArgumentException($msg);
         }
 
         if (!is_null($tcp_server) && array_key_exists('tcp_context', $this->serverParams)) {
             $msg = sprintf('You cannot provide both server parameters "tcp_context" and "tcp_server".');
-            throw new \InvalidArgumentException($msg);
+            throw new InvalidArgumentException($msg);
         }
 
         if (!is_null($tcp_server)) {
@@ -348,7 +351,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
                 $msg = sprintf('Expected server parameter "tcp_server" to implement %s, got %s.',
                     TcpServer::class,
                     is_object($tcp_server) ? get_class($tcp_server) : gettype($tcp_server));
-                throw new \InvalidArgumentException($msg);
+                throw new InvalidArgumentException($msg);
             }
             return $tcp_server;
         }
@@ -356,7 +359,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         if (!is_null($uri)) {
             if (!is_string($uri)) {
                 $msg = sprintf('Expected server parameter "uri" to be a string, got %s.', gettype($uri));
-                throw new \InvalidArgumentException($msg);
+                throw new InvalidArgumentException($msg);
             }
             return new TcpServer($uri, $loop, $tcp_context);
         }
