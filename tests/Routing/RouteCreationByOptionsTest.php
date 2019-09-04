@@ -14,6 +14,7 @@ use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use TS\WebSockets\Http\MatcherFactory;
 use TS\WebSockets\Http\RequestMatcherInterface;
+use TS\WebSockets\Routing\RouteCollection;
 
 
 class RouteCreationByOptionsTest extends TestCase
