@@ -21,12 +21,9 @@ class HelloUserController implements ControllerInterface
     {
     }
 
-    function onClose(WebSocket $socket): void
+    function onClose(WebSocket $socket, ?Throwable $error): void
     {
     }
 
-    function onError(WebSocket $socket, \Throwable $error): void
-    {
-    }
 
 }

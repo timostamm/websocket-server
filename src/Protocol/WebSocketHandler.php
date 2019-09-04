@@ -45,6 +45,8 @@ class WebSocketHandler
 
     protected $closed = false;
     protected $closing = false;
+    protected $closeCode = -1;
+    protected $closeReason = '';
 
 
     public function __construct(
@@ -127,11 +129,13 @@ class WebSocketHandler
         }
 
         $this->closing = true;
+        $this->closeCode = $code;
+        $this->closeReason = $reason;
 
         $frame = $this->buffer->newCloseFrame($code, $reason);
         $this->tcpConnection->write($frame->getContents());
 
-        $this->webSocket->emit('close');
+        $this->webSocket->emit('close', [null]);
     }
 
 
@@ -146,8 +150,12 @@ class WebSocketHandler
     protected function ackClose(FrameInterface $frame): void
     {
         $this->closing = true;
+        list($code, $reason) = $this->decodeCloseFrame($frame);
+        $this->closeCode = $code;
+        $this->closeReason = $reason;
+
         $this->tcpConnection->end($frame->getContents());
-        $this->webSocket->emit('close');
+        $this->webSocket->emit('close', [null]);
     }
 
 
@@ -160,6 +168,18 @@ class WebSocketHandler
     public function isClosing(): bool
     {
         return $this->closing;
+    }
+
+
+    public function getCloseCode(): int
+    {
+        return is_int($this->closeCode) ? $this->closeCode : -1;
+    }
+
+
+    public function getCloseReason(): string
+    {
+        return is_string($this->closeReason) ? $this->closeReason : '';
     }
 
 
@@ -184,10 +204,8 @@ class WebSocketHandler
     {
         if (!$this->closed && !$this->closing) {
             $this->webSocket->emit('error', [$throwable]);
-            $this->webSocket->emit('close');
+            $this->webSocket->emit('close', [$throwable]);
         }
-        // should we close tcp or not?
-        //$this->tcpConnection->close();
         $this->setClosed();
     }
 
@@ -195,8 +213,9 @@ class WebSocketHandler
     public function onTcpEnd(): void
     {
         if (!$this->closed && !$this->closing) {
-            $this->webSocket->emit('error', [new RuntimeException('TCP connection ended without close.')]);
-            $this->webSocket->emit('close');
+            $error = new RuntimeException('TCP connection ended without close.');
+            $this->webSocket->emit('error', [$error]);
+            $this->webSocket->emit('close', [$error]);
         }
         $this->setClosed();
     }
@@ -205,8 +224,9 @@ class WebSocketHandler
     public function onTcpClose(): void
     {
         if (!$this->closed && !$this->closing) {
-            $this->webSocket->emit('error', [new RuntimeException('TCP connection closed without close.')]);
-            $this->webSocket->emit('close');
+            $error = new RuntimeException('TCP connection closed without close.');
+            $this->webSocket->emit('error', [$error]);
+            $this->webSocket->emit('close', [$error]);
         }
         $this->setClosed();
     }

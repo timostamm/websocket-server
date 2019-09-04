@@ -22,9 +22,9 @@ use TS\WebSockets\Protocol\WebSocketHandler;
  *
  * "message" => string $payload, bool $binary
  *
- * "error" => \Throwable $throwable
+ * "error" => Throwable $throwable
  *
- * "close"
+ * "close" => ?Throwable $throwable
  *
  */
 class WebSocket extends EventEmitter
@@ -90,6 +90,38 @@ class WebSocket extends EventEmitter
     {
         return $this->handler->isClosed()
             || $this->handler->isClosing();
+    }
+
+
+    /**
+     * When the connection is closed or closing, the close code can
+     * be obtained here.
+     *
+     * However, the connection may also be closed because of a TCP
+     * error. In this case, the close code may be unavailable and
+     * is -1.
+     *
+     * @return int
+     */
+    public function getCloseCode(): int
+    {
+        return $this->handler->getCloseCode();
+    }
+
+
+    /**
+     * When the connection is closed or closing, the close reason
+     * can be obtained here.
+     *
+     * However, the connection may also be closed because of a TCP
+     * error. In this case, the close reason may be unavailable and
+     * is ''.
+     *
+     * @return string
+     */
+    public function getCloseReason(): string
+    {
+        return $this->handler->getCloseReason();
     }
 
 

@@ -67,14 +67,9 @@ $server->route([
             print $from . ' received: ' . $payload . PHP_EOL;
         }
 
-        function onClose(WebSocket $socket): void
+        function onClose(WebSocket $socket, ?Throwable $error): void
         {
             print $socket . ' disconnected.' . PHP_EOL;
-        }
-
-        function onError(WebSocket $socket, \Throwable $error): void
-        {
-            print $socket . ' error: ' . $error->getMessage() . PHP_EOL;
         }
 
     }

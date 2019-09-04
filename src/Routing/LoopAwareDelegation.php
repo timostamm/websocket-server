@@ -9,7 +9,9 @@
 namespace TS\WebSockets\Routing;
 
 
+use LogicException;
 use React\EventLoop\LoopInterface;
+use Throwable;
 
 
 class LoopAwareDelegation extends ControllerDelegation
@@ -19,19 +21,19 @@ class LoopAwareDelegation extends ControllerDelegation
     {
         $loop = $this->serverParams['loop'];
         if (!$loop instanceof LoopInterface) {
-            $this->passError(new \LogicException());
+            $this->passError(new LogicException());
             return;
         }
 
         try {
 
             if (!$this->controller instanceof LoopAwareInterface) {
-                $this->passError(new \LogicException());
+                $this->passError(new LogicException());
                 return;
             }
             $this->controller->setLoop($loop, $this->errorHandler);
 
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             $this->passMethodCallError($throwable, 'setLoop', $loop, $this->errorHandler);
         }
     }

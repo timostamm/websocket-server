@@ -10,6 +10,8 @@ namespace TS\WebSockets\Routing;
 
 
 use React\Promise\PromiseInterface;
+use SplObjectStorage;
+use Throwable;
 use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\WebSocket;
 use function React\Promise\resolve;
@@ -23,14 +25,14 @@ abstract class ControllerDelegation
     /** @var ControllerInterface */
     protected $controller;
 
-    /** @var \SplObjectStorage */
+    /** @var SplObjectStorage */
     protected $connections;
 
     /** @var callable */
     protected $errorHandler;
 
 
-    public function __construct(array $serverParams, ControllerInterface $controller, \SplObjectStorage $controllerConnections, callable $errorHandler)
+    public function __construct(array $serverParams, ControllerInterface $controller, SplObjectStorage $controllerConnections, callable $errorHandler)
     {
         $this->serverParams = $serverParams;
         $this->controller = $controller;
@@ -39,13 +41,13 @@ abstract class ControllerDelegation
     }
 
 
-    protected function passMethodCallError(\Throwable $error, string $method, ... $args): void
+    protected function passMethodCallError(Throwable $error, string $method, ... $args): void
     {
         $this->passError(ControllerException::methodCall($this->controller, $method, $args, $error));
     }
 
 
-    protected function passError(\Throwable $error): void
+    protected function passError(Throwable $error): void
     {
         $fn = $this->errorHandler;
         $fn($error);
@@ -91,8 +93,9 @@ abstract class ControllerDelegation
      * Will be called *before* the socket is removed from the controller connections.
      *
      * @param WebSocket $websocket
+     * @param Throwable|null $error
      */
-    public function onClose(WebSocket $websocket): void
+    public function onClose(WebSocket $websocket, ?Throwable $error): void
     {
     }
 
@@ -102,7 +105,7 @@ abstract class ControllerDelegation
     }
 
 
-    public function onError(WebSocket $websocket, \Throwable $error): void
+    public function onError(WebSocket $websocket, Throwable $error): void
     {
     }
 

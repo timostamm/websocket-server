@@ -10,6 +10,8 @@ namespace TS\WebSockets\Routing;
 
 
 use React\Promise\PromiseInterface;
+use SplObjectStorage;
+use Throwable;
 use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\WebSocket;
 use function React\Promise\all;
@@ -24,14 +26,14 @@ class ControllerDelegationFactory
     /**
      * SplObjectStorage<ControllerInterface<ControllerDelegation>>
      *
-     * @var \SplObjectStorage
+     * @var SplObjectStorage
      */
     protected $delByCtrl;
 
     /**
      * SplObjectStorage<ControllerInterface<SplObjectStorage<WebSocket>>>
      *
-     * @var \SplObjectStorage | \SplObjectStorage[]
+     * @var SplObjectStorage | SplObjectStorage[]
      */
     protected $wsByCtrl;
 
@@ -44,8 +46,8 @@ class ControllerDelegationFactory
     {
         $this->serverParams = $serverParams;
         $this->serverErrorHandler = $serverErrorHandler;
-        $this->delByCtrl = new \SplObjectStorage();
-        $this->wsByCtrl = new \SplObjectStorage();
+        $this->delByCtrl = new SplObjectStorage();
+        $this->wsByCtrl = new SplObjectStorage();
     }
 
 
@@ -74,7 +76,7 @@ class ControllerDelegationFactory
             $delegation->onOpen($webSocket);
         }
 
-        $webSocket->on('error', function (\Throwable $error) use ($webSocket, $connections, $delegations) {
+        $webSocket->on('error', function (Throwable $error) use ($webSocket, $connections, $delegations) {
             foreach ($delegations as $delegation) {
                 $delegation->onError($webSocket, $error);
             }
@@ -86,9 +88,9 @@ class ControllerDelegationFactory
             }
         });
 
-        $webSocket->once('close', function () use ($webSocket, $connections, $delegations) {
+        $webSocket->once('close', function (?Throwable $error) use ($webSocket, $connections, $delegations) {
             foreach ($delegations as $delegation) {
-                $delegation->onClose($webSocket);
+                $delegation->onClose($webSocket, $error);
             }
             $connections->detach($webSocket);
         });
@@ -141,27 +143,27 @@ class ControllerDelegationFactory
     }
 
 
-    protected function getConnectionsByCtrl(ControllerInterface $controller): \SplObjectStorage
+    protected function getConnectionsByCtrl(ControllerInterface $controller): SplObjectStorage
     {
         if (!$this->wsByCtrl->contains($controller)) {
-            $this->wsByCtrl[$controller] = new \SplObjectStorage();
+            $this->wsByCtrl[$controller] = new SplObjectStorage();
         }
         return $this->wsByCtrl[$controller];
     }
 
 
-    protected function getDelegationsByCtrl(ControllerInterface $controller, ?bool &$initial): \SplObjectStorage
+    protected function getDelegationsByCtrl(ControllerInterface $controller, ?bool &$initial): SplObjectStorage
     {
         if ($this->delByCtrl->contains($controller)) {
             $initial = false;
         } else {
             $initial = true;
-            $errorHandler = function (\Throwable $error) use ($controller) {
+            $errorHandler = function (Throwable $error) use ($controller) {
                 $wrapped = ControllerException::controller($controller, $error);
                 $fn = $this->serverErrorHandler;
                 $fn($wrapped);
             };
-            $list = new \SplObjectStorage();
+            $list = new SplObjectStorage();
             foreach ($this->createDelegations($controller, $errorHandler) as $item) {
                 $list->attach($item);
             }
@@ -198,6 +200,10 @@ class ControllerDelegationFactory
 
         if ($controller instanceof OnFirstOpenInterface) {
             $a[] = new OnFirstOpenDelegation($this->serverParams, $controller, $this->getConnectionsByCtrl($controller), $errorHandler);
+        }
+
+        if ($controller instanceof OnErrorInterface) {
+            $a[] = new OnErrorDelegation($this->serverParams, $controller, $this->getConnectionsByCtrl($controller), $errorHandler);
         }
 
         if ($controller instanceof ControllerInterface) {

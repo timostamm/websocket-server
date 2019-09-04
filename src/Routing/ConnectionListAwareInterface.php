@@ -9,9 +9,11 @@
 namespace TS\WebSockets\Routing;
 
 
+use SplObjectStorage;
+
 interface ConnectionListAwareInterface
 {
 
-    function setConnections(\SplObjectStorage $webSockets): void;
+    function setConnections(SplObjectStorage $webSockets): void;
 
 }

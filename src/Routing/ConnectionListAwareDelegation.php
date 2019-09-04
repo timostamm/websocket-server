@@ -9,6 +9,9 @@
 namespace TS\WebSockets\Routing;
 
 
+use LogicException;
+use Throwable;
+
 class ConnectionListAwareDelegation extends ControllerDelegation
 {
 
@@ -17,13 +20,13 @@ class ConnectionListAwareDelegation extends ControllerDelegation
         try {
 
             if (!$this->controller instanceof ConnectionListAwareInterface) {
-                $this->passError(new \LogicException());
+                $this->passError(new LogicException());
                 return;
-
             }
+
             $this->controller->setConnections($this->connections);
 
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             $this->passMethodCallError($throwable, 'setConnections', $this->connections);
         }
     }
