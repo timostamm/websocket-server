@@ -6,7 +6,7 @@
  * Time: 23:55
  */
 
-namespace TS\WebSockets\Routing;
+namespace TS\WebSockets\Controller\Delegations;
 
 
 use Throwable;
@@ -24,7 +24,7 @@ use TS\WebSockets\WebSocket;
  * standard onClose callback.
  *
  * Interface OnErrorInterface
- * @package TS\WebSockets\Routing
+ * @package TS\WebSockets\Controller
  */
 interface OnErrorInterface
 {

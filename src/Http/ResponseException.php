@@ -11,10 +11,11 @@ namespace TS\WebSockets\Http;
 
 use GuzzleHttp\Psr7\Response;
 use Psr\Http\Message\ResponseInterface;
+use RuntimeException;
 use Throwable;
 
 
-class ResponseException extends \RuntimeException
+class ResponseException extends RuntimeException
 {
 
 

@@ -6,10 +6,11 @@
  * Time: 19:45
  */
 
-namespace TS\WebSockets\Routing;
+namespace TS\WebSockets\Controller;
 
 
 use GuzzleHttp\Psr7\ServerRequest;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use TS\WebSockets\Http\UrlPatternRequestMatcher;
 
@@ -68,7 +69,7 @@ class UrlPatternRequestMatcherTest extends TestCase
      */
     public function testConstructor(string $pattern)
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new UrlPatternRequestMatcher($pattern);
     }
 

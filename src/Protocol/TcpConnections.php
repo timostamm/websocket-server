@@ -13,6 +13,7 @@ use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use React\Socket\ServerInterface;
+use SplObjectStorage;
 use function React\Promise\resolve;
 
 
@@ -22,7 +23,7 @@ class TcpConnections
     /** @var ServerInterface */
     private $server;
 
-    /** @var \SplObjectStorage */
+    /** @var SplObjectStorage */
     private $connections;
 
     /** @var Deferred */
@@ -36,7 +37,7 @@ class TcpConnections
     {
         $this->server = $server;
         $this->onConnection = $onConnection;
-        $this->connections = new \SplObjectStorage();
+        $this->connections = new SplObjectStorage();
         $server->on('connection', [$this, 'onOpen']);
     }
 

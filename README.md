@@ -170,12 +170,8 @@ You can implement one or more of the following interfaces to get access to the l
 clients connected to this controller, etc.
 
 ```php
-class MyCtrl implements ControllerInterface, ServerParamsAwareInterface, LoopAwareInterface ConnectionListAwareInterface, OnShutDownInterface, OnLastCloseInterface, OnFirstOpenInterface
+class MyCtrl implements ControllerInterface, LoopAwareInterface ConnectionListAwareInterface, OnShutDownInterface, OnLastCloseInterface, OnFirstOpenInterface
 {
-    function setServerParams(array $serverParams): void
-    {
-        print 'Got server params.' . PHP_EOL;
-    }
 
     function setLoop(\React\EventLoop\LoopInterface $loop, callable $exceptionHandler): void
     {

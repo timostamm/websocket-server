@@ -4,6 +4,7 @@ namespace TS\WebSockets;
 
 use Ratchet\RFC6455\Messaging\Frame;
 use Throwable;
+use TS\WebSockets\Controller\ControllerInterface;
 
 class WebsocketController implements ControllerInterface
 {

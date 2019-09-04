@@ -6,12 +6,12 @@
  * Time: 13:58
  */
 
-namespace TS\WebSockets\Routing;
+namespace TS\WebSockets\Controller;
 
 
 use GuzzleHttp\Psr7\ServerRequest;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\Http\MatcherFactory;
 use TS\WebSockets\Http\RequestMatcherInterface;
 
@@ -77,7 +77,7 @@ class RouteCreationByOptionsTest extends TestCase
     public function testProtocolsType()
     {
         $ctrl = $this->createMock(ControllerInterface::class);
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->routes->create([
             'controller' => $ctrl,
             'sub_protocols' => 'str'
@@ -97,14 +97,14 @@ class RouteCreationByOptionsTest extends TestCase
 
     public function testControllerMissing()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->routes->create([]);
     }
 
 
     public function testControllerNull()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->routes->create([
             'controller' => null
         ]);
@@ -112,7 +112,7 @@ class RouteCreationByOptionsTest extends TestCase
 
     public function testControllerInstance()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('does not implement');
         $this->routes->create([
             'controller' => $this
@@ -121,7 +121,7 @@ class RouteCreationByOptionsTest extends TestCase
 
     public function testControllerType()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('got int');
         $this->routes->create([
             'controller' => 123

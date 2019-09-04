@@ -9,6 +9,7 @@
 namespace TS\WebSockets\Http;
 
 
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 
 
@@ -23,15 +24,15 @@ class OriginFilter implements RequestFilterInterface
     public function __construct(array $allowedOrigins)
     {
         if (empty($allowedOrigins)) {
-            throw new \InvalidArgumentException('No allowed origins provides');
+            throw new InvalidArgumentException('No allowed origins provides');
         }
         foreach ($allowedOrigins as $origin) {
             if (!is_string($origin)) {
-                throw new \InvalidArgumentException();
+                throw new InvalidArgumentException();
             }
             $origin = trim($origin);
             if (empty($origin)) {
-                throw new \InvalidArgumentException();
+                throw new InvalidArgumentException();
             }
             $this->allowedOrigins[] = strtolower($origin);
         }

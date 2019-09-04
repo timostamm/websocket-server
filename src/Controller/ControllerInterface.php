@@ -6,10 +6,11 @@
  * Time: 08:08
  */
 
-namespace TS\WebSockets;
+namespace TS\WebSockets\Controller;
 
 
 use Throwable;
+use TS\WebSockets\WebSocket;
 
 interface ControllerInterface
 {

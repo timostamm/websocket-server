@@ -6,12 +6,13 @@
  * Time: 10:22
  */
 
-namespace TS\WebSockets\Routing;
+namespace TS\WebSockets\Controller\Delegations;
 
 
 use LogicException;
 use React\EventLoop\LoopInterface;
 use Throwable;
+use TS\WebSockets\Controller\ControllerDelegation;
 
 
 class LoopAwareDelegation extends ControllerDelegation

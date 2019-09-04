@@ -11,10 +11,14 @@ namespace TS\WebSockets\Http;
 
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
+use InvalidArgumentException;
+use OverflowException;
 use Psr\Http\Message\ServerRequestInterface;
 use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
+use RuntimeException;
+use Throwable;
 use function GuzzleHttp\Psr7\parse_request;
 use function GuzzleHttp\Psr7\str;
 
@@ -40,7 +44,7 @@ class RequestParser
         if (!is_int($this->maxHeaderSize)) {
             $msg = sprintf('Invalid server parameter "request_header_max_size". Expected int, got %s.',
                 gettype($this->maxHeaderSize));
-            throw new \InvalidArgumentException($msg);
+            throw new InvalidArgumentException($msg);
         }
     }
 
@@ -64,25 +68,25 @@ class RequestParser
                     $request = $this->parseRequest($buffer, $conn);
                     $out->resolve($request);
                 }
-            } catch (\Throwable $throwable) {
+            } catch (Throwable $throwable) {
                 $conn->end(str(new Response(400)));
                 $out->reject($throwable);
             }
         };
 
-        $onError = function (\Throwable $error) use ($out) {
+        $onError = function (Throwable $error) use ($out) {
             $msg = 'Connection error while reading HTTP request data: ' . $error->getMessage();
-            $out->reject(new \RuntimeException($msg, null, $error));
+            $out->reject(new RuntimeException($msg, null, $error));
         };
 
         $onEnd = function () use ($out) {
             $msg = 'Connection prematurely ended while reading HTTP request data.';
-            $out->reject(new \RuntimeException($msg));
+            $out->reject(new RuntimeException($msg));
         };
 
         $onClose = function () use ($out) {
             $msg = 'Connection prematurely closed while reading HTTP request data.';
-            $out->reject(new \RuntimeException($msg));
+            $out->reject(new RuntimeException($msg));
         };
 
         $cleanup = function () use ($conn, &$onData, &$onError, &$onEnd, &$onClose) {
@@ -112,7 +116,7 @@ class RequestParser
     protected function guardHeaderSize(string $buffer): void
     {
         if ($this->maxHeaderSize > 0 && strlen($buffer) > $this->maxHeaderSize) {
-            throw new \OverflowException("Request header max size of {$this->maxHeaderSize} exceeded.");
+            throw new OverflowException("Request header max size of {$this->maxHeaderSize} exceeded.");
         }
     }
 

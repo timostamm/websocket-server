@@ -20,6 +20,9 @@ use React\Socket\ServerInterface;
 use React\Socket\TcpServer;
 use RuntimeException;
 use Throwable;
+use TS\WebSockets\Controller\ControllerManager;
+use TS\WebSockets\Routing\Route;
+use TS\WebSockets\Routing\RouteCollection;
 use TS\WebSockets\Http\FilterCollection;
 use TS\WebSockets\Http\MatcherFactory;
 use TS\WebSockets\Http\RequestFilterInterface;
@@ -30,9 +33,6 @@ use TS\WebSockets\Http\RouteStarsFilters;
 use TS\WebSockets\Protocol\TcpConnections;
 use TS\WebSockets\Protocol\WebSocketHandlerFactory;
 use TS\WebSockets\Protocol\WebSocketNegotiator;
-use TS\WebSockets\Routing\ControllerDelegationFactory;
-use TS\WebSockets\Routing\Route;
-use TS\WebSockets\Routing\RouteCollection;
 use function GuzzleHttp\Psr7\str;
 use function React\Promise\all;
 use function React\Promise\resolve;
@@ -83,8 +83,8 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     /** @var WebSocketHandlerFactory */
     protected $webSocketHandlers;
 
-    /** @var ControllerDelegationFactory */
-    protected $controllerDelegations;
+    /** @var ControllerManager */
+    protected $controllerManager;
 
     /** @var TcpServer */
     protected $tcpServer;
@@ -137,7 +137,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
         $this->routes = new RouteCollection($this->serverParams, $this->matcherFactory);
         $this->negotiator = new WebSocketNegotiator($this->serverParams);
         $this->webSocketHandlers = new WebSocketHandlerFactory($this->serverParams);
-        $this->controllerDelegations = new ControllerDelegationFactory($this->serverParams, $onError);
+        $this->controllerManager = new ControllerManager($this->serverParams, $onError);
         $this->tcpServer = $this->createTcpServer($loop);
         $this->tcpServer->on('error', $onError);
         $this->tcpConnections = new TcpConnections($this->tcpServer, function (ConnectionInterface $connection) {
@@ -234,7 +234,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
             $this->tcpConnections->shutDown(),
 
             // shutdown controllers
-            resolve($this->controllerDelegations->shutDown())->always(function () {
+            resolve($this->controllerManager->shutDown())->always(function () {
 
                 // then gracefully close web socket connections
                 return $this->webSocketHandlers->shutDown();
@@ -259,7 +259,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
     {
         return $this->tcpConnections->stats()
             + $this->webSocketHandlers->stats()
-            + $this->controllerDelegations->stats();
+            + $this->controllerManager->stats();
     }
 
 
@@ -321,7 +321,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
 
         $handler = $this->webSocketHandlers->add($request, $tcpConnection);
 
-        $this->controllerDelegations->add($route->getController(), $handler->getWebSocket());
+        $this->controllerManager->add($route->getController(), $handler->getWebSocket());
     }
 
 

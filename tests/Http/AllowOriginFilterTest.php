@@ -9,6 +9,7 @@
 namespace TS\WebSockets\Http;
 
 use GuzzleHttp\Psr7\ServerRequest;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 
@@ -23,7 +24,7 @@ class AllowOriginFilterTest extends TestCase
      */
     public function testConstructor(array $allow)
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new OriginFilter($allow);
     }
 

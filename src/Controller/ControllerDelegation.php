@@ -6,13 +6,12 @@
  * Time: 14:41
  */
 
-namespace TS\WebSockets\Routing;
+namespace TS\WebSockets\Controller;
 
 
 use React\Promise\PromiseInterface;
 use SplObjectStorage;
 use Throwable;
-use TS\WebSockets\ControllerInterface;
 use TS\WebSockets\WebSocket;
 use function React\Promise\resolve;
 

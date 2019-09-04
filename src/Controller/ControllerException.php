@@ -6,17 +6,19 @@
  * Time: 12:39
  */
 
-namespace TS\WebSockets\Routing;
+namespace TS\WebSockets\Controller;
 
 
+use RuntimeException;
+use Throwable;
 use TS\WebSockets\WebSocket;
 
 
-class ControllerException extends \RuntimeException
+class ControllerException extends RuntimeException
 {
 
 
-    public static function methodCall($controller, string $method, array $args, \Throwable $previous): self
+    public static function methodCall($controller, string $method, array $args, Throwable $previous): self
     {
         $args = array_map([self::class, 'formatVar'], $args);
         $msg = sprintf('Caught %s when invoking %s::%s(%s): %s', get_class($previous), get_class($controller), $method, join(', ', $args), $previous->getMessage());
@@ -24,7 +26,7 @@ class ControllerException extends \RuntimeException
     }
 
 
-    public static function controller($controller, \Throwable $previous): self
+    public static function controller($controller, Throwable $previous): self
     {
         $msg = sprintf('Caught %s from %s: %s', get_class($previous), get_class($controller), $previous->getMessage());
         return new self($msg, 0, $previous);
@@ -61,7 +63,7 @@ class ControllerException extends \RuntimeException
     }
 
 
-    public function __construct(string $message = "", int $code = 0, \Throwable $previous = null)
+    public function __construct(string $message = "", int $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }

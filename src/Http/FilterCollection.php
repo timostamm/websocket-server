@@ -9,6 +9,7 @@
 namespace TS\WebSockets\Http;
 
 
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 
 
@@ -58,7 +59,7 @@ class FilterCollection
         if (is_callable($filter)) {
             $filter = new CallbackRequestFilter($filter);
         } else if (!$filter instanceof RequestFilterInterface) {
-            throw new \InvalidArgumentException('Invalid argument $filter. Expected callable or RequestFilterInterface.');
+            throw new InvalidArgumentException('Invalid argument $filter. Expected callable or RequestFilterInterface.');
         }
         return $filter;
     }

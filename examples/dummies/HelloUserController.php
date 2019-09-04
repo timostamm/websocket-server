@@ -1,6 +1,6 @@
 <?php
 
-use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\Controller\ControllerInterface;
 use TS\WebSockets\WebSocket;
 
 /**

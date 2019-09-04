@@ -6,18 +6,30 @@
  * Time: 09:59
  */
 
-namespace TS\WebSockets\Routing;
+namespace TS\WebSockets\Controller;
 
 
 use React\Promise\PromiseInterface;
 use SplObjectStorage;
 use Throwable;
-use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\Controller\Delegations\ConnectionListAwareDelegation;
+use TS\WebSockets\Controller\Delegations\ConnectionListAwareInterface;
+use TS\WebSockets\Controller\Delegations\LoopAwareDelegation;
+use TS\WebSockets\Controller\Delegations\LoopAwareInterface;
+use TS\WebSockets\Controller\Delegations\OnErrorDelegation;
+use TS\WebSockets\Controller\Delegations\OnErrorInterface;
+use TS\WebSockets\Controller\Delegations\OnFirstOpenDelegation;
+use TS\WebSockets\Controller\Delegations\OnFirstOpenInterface;
+use TS\WebSockets\Controller\Delegations\OnLastCloseDelegation;
+use TS\WebSockets\Controller\Delegations\OnLastCloseInterface;
+use TS\WebSockets\Controller\Delegations\OnShutDownDelegation;
+use TS\WebSockets\Controller\Delegations\OnShutDownInterface;
+use TS\WebSockets\Controller\Delegations\StandardDelegation;
 use TS\WebSockets\WebSocket;
 use function React\Promise\all;
 
 
-class ControllerDelegationFactory
+class ControllerManager
 {
 
     protected $serverParams;
@@ -184,10 +196,6 @@ class ControllerDelegationFactory
 
         if ($controller instanceof OnShutDownInterface) {
             $a[] = new OnShutDownDelegation($this->serverParams, $controller, $this->getConnectionsByCtrl($controller), $errorHandler);
-        }
-
-        if ($controller instanceof ServerParamsAwareInterface) {
-            $a[] = new ServerParamsAwareDelegation($this->serverParams, $controller, $this->getConnectionsByCtrl($controller), $errorHandler);
         }
 
         if ($controller instanceof LoopAwareInterface) {

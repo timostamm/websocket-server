@@ -12,6 +12,7 @@ namespace TS\WebSockets\Http;
 use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
+use UnexpectedValueException;
 
 class CallbackRequestFilterTest extends TestCase
 {
@@ -30,7 +31,7 @@ class CallbackRequestFilterTest extends TestCase
             return 'abc';
         });
 
-        $this->expectException(\UnexpectedValueException::class);
+        $this->expectException(UnexpectedValueException::class);
         $cb->apply($this->request);
     }
 

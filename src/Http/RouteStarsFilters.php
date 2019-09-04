@@ -9,6 +9,7 @@
 namespace TS\WebSockets\Http;
 
 
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 
 
@@ -32,7 +33,7 @@ class RouteStarsFilters implements RequestFilterInterface
     public function __construct(string $pattern)
     {
         if (empty($pattern)) {
-            throw new \InvalidArgumentException();
+            throw new InvalidArgumentException();
         }
         $re = preg_quote($pattern, '/');
         $re = str_replace('\*', '([^\/]+)', $re);

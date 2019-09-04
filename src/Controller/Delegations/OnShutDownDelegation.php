@@ -6,10 +6,13 @@
  * Time: 10:22
  */
 
-namespace TS\WebSockets\Routing;
+namespace TS\WebSockets\Controller\Delegations;
 
 
+use LogicException;
 use React\Promise\PromiseInterface;
+use Throwable;
+use TS\WebSockets\Controller\ControllerDelegation;
 use function React\Promise\resolve;
 
 
@@ -21,13 +24,13 @@ class OnShutDownDelegation extends ControllerDelegation
         try {
 
             if (!$this->controller instanceof OnShutDownInterface) {
-                $this->passError(new \LogicException());
+                $this->passError(new LogicException());
                 return resolve();
 
             }
             return $this->controller->onShutdown();
 
-        } catch (\Throwable $throwable) {
+        } catch (Throwable $throwable) {
             $this->passMethodCallError($throwable, 'onShutdown');
             return resolve();
         }

@@ -10,6 +10,7 @@ namespace TS\WebSockets\Http;
 
 
 use Psr\Http\Message\ServerRequestInterface;
+use UnexpectedValueException;
 
 class CallbackRequestFilter implements RequestFilterInterface
 {
@@ -32,7 +33,7 @@ class CallbackRequestFilter implements RequestFilterInterface
             return $result;
         }
         $msg = 'Expected request filter callback to return a ServerRequestInterface or null, got ' . gettype($result) . '.';
-        throw new \UnexpectedValueException($msg);
+        throw new UnexpectedValueException($msg);
     }
 
 

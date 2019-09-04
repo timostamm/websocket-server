@@ -3,7 +3,7 @@
 
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\Factory;
-use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\Controller\ControllerInterface;
 use TS\WebSockets\Http\OriginFilter;
 use TS\WebSockets\Http\ResponseException;
 use TS\WebSockets\WebSocket;

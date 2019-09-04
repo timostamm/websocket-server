@@ -6,7 +6,7 @@
  * Time: 23:55
  */
 
-namespace TS\WebSockets\Routing;
+namespace TS\WebSockets\Controller\Delegations;
 
 
 use SplObjectStorage;

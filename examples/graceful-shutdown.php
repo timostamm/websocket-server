@@ -5,9 +5,9 @@ use React\EventLoop\Factory;
 use React\EventLoop\LoopInterface;
 use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
-use TS\WebSockets\ControllerInterface;
-use TS\WebSockets\Routing\LoopAwareInterface;
-use TS\WebSockets\Routing\OnShutDownInterface;
+use TS\WebSockets\Controller\ControllerInterface;
+use TS\WebSockets\Controller\Delegations\LoopAwareInterface;
+use TS\WebSockets\Controller\Delegations\OnShutDownInterface;
 use TS\WebSockets\WebSocket;
 use TS\WebSockets\WebSocketServer;
 
@@ -69,7 +69,7 @@ $server->route([
             print $socket . ' disconnected.' . PHP_EOL;
         }
 
-        function onError(WebSocket $socket, \Throwable $error): void
+        function onError(WebSocket $socket, Throwable $error): void
         {
             print $socket . ' error: ' . $error->getMessage() . PHP_EOL;
         }

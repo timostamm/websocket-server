@@ -10,7 +10,7 @@ namespace TS\WebSockets\Routing;
 
 
 use Psr\Http\Message\ServerRequestInterface;
-use TS\WebSockets\ControllerInterface;
+use TS\WebSockets\Controller\ControllerInterface;
 use TS\WebSockets\Http\RequestMatcherInterface;
 
 

@@ -15,6 +15,8 @@ use Ratchet\RFC6455\Messaging\Frame;
 use React\Promise\Deferred;
 use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
+use SplObjectStorage;
+use UnderflowException;
 use function React\Promise\resolve;
 
 
@@ -48,7 +50,7 @@ class WebSocketHandlerFactory
     private static function exceptionFactory(): callable
     {
         if (!self::$exceptionFactory) {
-            self::$sharedException = new \UnderflowException();
+            self::$sharedException = new UnderflowException();
             self::$exceptionFactory = function () {
                 return self::$sharedException;
             };
@@ -57,7 +59,7 @@ class WebSocketHandlerFactory
     }
 
 
-    /** @var \SplObjectStorage */
+    /** @var SplObjectStorage */
     private $handlerByTcp;
 
     /** @var Deferred */
@@ -66,7 +68,7 @@ class WebSocketHandlerFactory
 
     public function __construct(array $serverParams)
     {
-        $this->handlerByTcp = new \SplObjectStorage();
+        $this->handlerByTcp = new SplObjectStorage();
     }
 
 

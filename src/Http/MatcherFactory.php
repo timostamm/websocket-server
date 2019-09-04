@@ -9,6 +9,8 @@
 namespace TS\WebSockets\Http;
 
 
+use InvalidArgumentException;
+
 class MatcherFactory
 {
 
@@ -25,7 +27,7 @@ class MatcherFactory
         if (is_string($match)) {
             $match = new UrlPatternRequestMatcher($match);
         } else if (!$match instanceof RequestMatcherInterface) {
-            throw new \InvalidArgumentException('Invalid argument $match. Expected string or RequestMatcherInterface.');
+            throw new InvalidArgumentException('Invalid argument $match. Expected string or RequestMatcherInterface.');
         }
         return $match;
     }

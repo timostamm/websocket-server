@@ -9,6 +9,7 @@
 namespace TS\WebSockets\Http;
 
 
+use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 
 class UrlPatternRequestMatcher implements RequestMatcherInterface
@@ -25,7 +26,7 @@ class UrlPatternRequestMatcher implements RequestMatcherInterface
     public function __construct(string $pattern)
     {
         if (empty($pattern)) {
-            throw new \InvalidArgumentException();
+            throw new InvalidArgumentException();
         }
         $this->pattern = $pattern;
     }
