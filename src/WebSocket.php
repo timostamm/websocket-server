@@ -51,12 +51,23 @@ class WebSocket extends EventEmitter
 
 
     /**
+     * Close the websocket.
+     *
+     * The size of the $reason parameter is limited.
+     * See WebSocketHandler#MAX_REASON_SIZE.
+     *
+     * If the reason is too long, it will be truncated.
+     *
      * @param int $code
      * @param string $reason
      */
-    public function close(int $code = Frame::CLOSE_NORMAL, string $reason=''): void
+    public function close(int $code = Frame::CLOSE_NORMAL, string $reason = ''): void
     {
-        $this->handler->startClose($code, $reason);
+        $r = strlen($reason) > WebSocketHandler::MAX_REASON_SIZE
+            ? substr($reason, 0, WebSocketHandler::MAX_REASON_SIZE - 3) . '...'
+            : $reason;
+
+        $this->handler->startClose($code, $r);
     }
 
 

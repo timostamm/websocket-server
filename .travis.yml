@@ -6,5 +6,5 @@ php:
 install:
   - composer install
 
-script: phpunit --coverage-text
+script: php vendor/bin/phpunit --coverage-text
 

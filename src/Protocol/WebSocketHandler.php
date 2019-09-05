@@ -30,6 +30,12 @@ use TS\WebSockets\WebSocket;
 class WebSocketHandler
 {
 
+    /**
+     * Control frame payload max size is 125.
+     * 2 bytes are required for control code.
+     */
+    const MAX_REASON_SIZE = 125 - 2;
+
 
     /** @var MessageBuffer */
     protected $buffer;
@@ -126,6 +132,11 @@ class WebSocketHandler
         }
         if ($this->closing) {
             throw new BadMethodCallException('Already closing.');
+        }
+
+        if (strlen($reason) > self::MAX_REASON_SIZE) {
+            $msg = sprintf('Close reason exceeds max length of %s bytes. Actual size is %s bytes.', self::MAX_REASON_SIZE, strlen($reason));
+            throw new BadMethodCallException($msg);
         }
 
         $this->closing = true;
