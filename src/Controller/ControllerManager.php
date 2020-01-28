@@ -171,9 +171,11 @@ class ControllerManager
         } else {
             $initial = true;
             $errorHandler = function (Throwable $error) use ($controller) {
-                $wrapped = ControllerException::controller($controller, $error);
+                $controllerEx = $error instanceof ControllerException
+                    ? $error
+                    : ControllerException::controller($controller, $error);
                 $fn = $this->serverErrorHandler;
-                $fn($wrapped);
+                $fn($controllerEx);
             };
             $list = new SplObjectStorage();
             foreach ($this->createDelegations($controller, $errorHandler) as $item) {
