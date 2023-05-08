@@ -5,8 +5,8 @@
     "require": {
         "php": "^7.2 || ^8.0",
         "react/socket": "^1.0",
-        "ratchet/rfc6455": "^0.2.4",
-        "guzzlehttp/psr7": "^1.4"
+        "ratchet/rfc6455": "^0.3",
+        "guzzlehttp/psr7": "^2.4.5"
     },
     "license": "MIT",
     "authors": [
