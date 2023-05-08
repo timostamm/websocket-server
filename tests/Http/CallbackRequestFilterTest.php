@@ -20,7 +20,7 @@ class CallbackRequestFilterTest extends TestCase
     /** @var ServerRequestInterface */
     private $request;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->request = new ServerRequest('GET', 'some');
     }

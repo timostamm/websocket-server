@@ -30,7 +30,7 @@ class RouteStarsFilterTest extends TestCase
         $f = new RouteStarsFilters('/api-v1/a/*/b');
         $r = $f->apply(new ServerRequest('GET', 'http://localhost/api-v2/a/123/b'));
         $s = $r->getAttribute('route_stars');
-        $this->assertInternalType('array', $s);
+        $this->assertIsArray($s);
         $this->assertEquals([''], $s);
     }
 

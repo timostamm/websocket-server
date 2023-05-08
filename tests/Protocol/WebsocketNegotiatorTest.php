@@ -29,7 +29,7 @@ class WebsocketNegotiatorTest extends TestCase
     private $neg;
 
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->neg = $this->createMock(NegotiatorInterface::class);
         $this->subject = new WebSocketNegotiator([], $this->neg);
