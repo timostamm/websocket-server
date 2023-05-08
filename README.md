@@ -1,5 +1,10 @@
 # WebSocket Server
 
+[![build](https://github.com/timostamm/websocket-server/workflows/CI/badge.svg)](https://github.com/timostamm/websocket-server/actions?query=workflow:"CI")
+![Packagist PHP Version](https://img.shields.io/packagist/dependency-v/timostamm/websocket-server/php)
+[![GitHub tag](https://img.shields.io/github/tag/timostamm/websocket-server?include_prereleases=&sort=semver&color=blue)](https://github.com/timostamm/websocket-server/releases/)
+[![License](https://img.shields.io/badge/License-MIT-blue)](#license)
+
 A simple nonblocking server dedicated to websockets.
 
 - upgrades HTTP requests
