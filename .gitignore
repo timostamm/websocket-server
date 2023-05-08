@@ -4,6 +4,7 @@
 .phpunit
 /phpunit.xml
 /vendor/
+/composer.lock
 
 
 # IDEs and editors
@@ -36,4 +37,4 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
-
+/.phpunit.result.cache

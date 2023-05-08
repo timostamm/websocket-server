@@ -20,7 +20,7 @@ class FilterCollectionTest extends TestCase
     /** @var FilterCollection */
     private $subject;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->subject = new FilterCollection([]);
     }

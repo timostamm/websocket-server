@@ -20,7 +20,7 @@ class ResponseExceptionTest extends TestCase
     private $response;
 
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->response = new Response(404, [], 'body', '1.1', 'really not found');
     }

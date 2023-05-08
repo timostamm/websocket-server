@@ -9,6 +9,7 @@
 namespace TS\WebSockets\Http;
 
 
+use GuzzleHttp\Psr7\Message;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
 use InvalidArgumentException;
@@ -19,8 +20,6 @@ use React\Promise\PromiseInterface;
 use React\Socket\ConnectionInterface;
 use RuntimeException;
 use Throwable;
-use function GuzzleHttp\Psr7\parse_request;
-use function GuzzleHttp\Psr7\str;
 
 
 class RequestParser
@@ -69,7 +68,7 @@ class RequestParser
                     $out->resolve($request);
                 }
             } catch (Throwable $throwable) {
-                $conn->end(str(new Response(400)));
+                $conn->end(Message::toString(new Response(400)));
                 $out->reject($throwable);
             }
         };
@@ -123,7 +122,7 @@ class RequestParser
 
     protected function parseRequest(string $buffer, ConnectionInterface $tcpConnection): ServerRequestInterface
     {
-        $request = parse_request($buffer);
+        $request = Message::parseRequest($buffer);
         $serverRequest = new ServerRequest(
             $request->getMethod(),
             $request->getUri(),

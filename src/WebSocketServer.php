@@ -10,6 +10,7 @@ namespace TS\WebSockets;
 
 
 use Evenement\EventEmitter;
+use GuzzleHttp\Psr7\Message;
 use InvalidArgumentException;
 use Psr\Http\Message\ServerRequestInterface;
 use React\EventLoop\LoopInterface;
@@ -33,7 +34,6 @@ use TS\WebSockets\Http\RouteStarsFilters;
 use TS\WebSockets\Protocol\TcpConnections;
 use TS\WebSockets\Protocol\WebSocketHandlerFactory;
 use TS\WebSockets\Protocol\WebSocketNegotiator;
-use function GuzzleHttp\Psr7\str;
 use function React\Promise\all;
 use function React\Promise\resolve;
 
@@ -276,7 +276,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
 
                     // TODO this is part of normal control flow, but we should log this somehow
 
-                    $tcpConnection->write(str($error->getResponse()));
+                    $tcpConnection->write(Message::toString($error->getResponse()));
                     $tcpConnection->end();
 
                 }
@@ -317,7 +317,7 @@ class WebSocketServer extends EventEmitter implements ServerInterface
             $route->getSupportedSubProtocols()
         );
 
-        $tcpConnection->write(str($response));
+        $tcpConnection->write(Message::toString($response));
 
         $handler = $this->webSocketHandlers->add($request, $tcpConnection);
 

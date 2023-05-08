@@ -9,12 +9,12 @@
 namespace TS\WebSockets\Protocol;
 
 
+use GuzzleHttp\Psr7\Message;
 use GuzzleHttp\Psr7\Response;
 use GuzzleHttp\Psr7\ServerRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Ratchet\RFC6455\Handshake\NegotiatorInterface;
-use function GuzzleHttp\Psr7\str;
 
 
 class WebsocketNegotiatorTest extends TestCase
@@ -29,7 +29,7 @@ class WebsocketNegotiatorTest extends TestCase
     private $neg;
 
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->neg = $this->createMock(NegotiatorInterface::class);
         $this->subject = new WebSocketNegotiator([], $this->neg);
@@ -48,7 +48,7 @@ class WebsocketNegotiatorTest extends TestCase
 
         $result = $this->subject->handshake($request, []);
 
-        $this->assertSame(str($response), str($result));
+        $this->assertSame(Message::toString($response), Message::toString($result));
     }
 
 }

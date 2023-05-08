@@ -23,7 +23,7 @@ class RouteCreationByOptionsTest extends TestCase
     /** @var RouteCollection */
     private $routes;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->routes = new RouteCollection([], new MatcherFactory([]));
     }
