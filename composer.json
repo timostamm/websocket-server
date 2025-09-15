@@ -3,7 +3,7 @@
     "description": "A simple nonblocking server dedicated to websockets.",
     "type": "library",
     "require": {
-        "php": "^7.2 || ^8.0",
+        "php": "^8.0",
         "react/socket": "^1.0",
         "ratchet/rfc6455": "^0.3",
         "guzzlehttp/psr7": "^1.9 || ^2.5"
